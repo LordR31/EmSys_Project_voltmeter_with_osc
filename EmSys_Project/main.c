@@ -1,23 +1,22 @@
 #include <avr/io.h>
-#include <util/delay.h>
 #include <avr/interrupt.h>
 #include <stdbool.h>
 
 #define F_CPU 16000000UL
 #define BAUD 9600
 #define MYUBRR ((F_CPU / (16UL * BAUD)) - 1)
-
 #define MAX_VOLTS 5.048 // Volts (max value for adc, for AVCC)
 #define ADC_MAX_VALUE 1023 // 10 bit adc -> 0 - 1023 range
-
 #define CMD_BUFFER_SIZE 32
 volatile char command_buffer[CMD_BUFFER_SIZE];
 volatile uint8_t cmd_index = 0;
+
 
 // LED PINS
 #define GREEN_LED PC5
 #define ORANGE_LED PC3
 #define RED_LED PC4
+
 
 // LCD PINS & PORTS
 #define LCD_RS_BIT PC0
@@ -27,17 +26,76 @@ volatile uint8_t cmd_index = 0;
 #define LCD_CTRL_PORT PORTC
 #define LCD_CTRL_DDR  DDRC
 
-/*
-Using PuTTY, to be able to send a character or characters, do the following:
 
-In Terminal, set:
-Local Echo -> Force on
-Local Line editing -> Force on
-*/
+// FLAGS & VARIABLES
+volatile bool is_adc_on = false;
+volatile bool button_pressed = false;
+volatile uint32_t last_button_time = 0;
+volatile uint32_t millis_counter = 0;
 
-// FLAGS FOR USER COMMANDS
-bool is_adc_on = true;
-bool show_voltage = false;
+
+//////////////////////
+////    TIMER0    ////
+//////////////////////
+
+
+void Timer0_Init(void){
+	TCCR0A = 0x00;                          // reset counter config
+	
+	TCCR0B &= ~(1 << CS02);                 // clear CS02
+	TCCR0B |= (1 << CS01) | (1 << CS00);    // set CS00 & CS01 for 64 prescaler (but this is a bit too slow still, 1.024ms instead of 1 ms flat for ovf => preload the counter)
+	
+	TCNT0 = 6;                              // preload counter value to get exactly 1ms for ovf
+	TIMSK0 |= (1 << TOIE0);                 // enable Timer0 overflow interrupt
+}
+
+ISR(TIMER0_OVF_vect){
+	TCNT0 = 6;           // reload for next 1 ms
+	millis_counter++;    // increment ms counter
+}
+
+
+//////////////////////
+////    TIMER1    ////
+//////////////////////
+
+
+void Timer1_Init(void){
+	TCCR1A = 0x00;                          // reset counter config
+	
+	TCCR1B &= ~((1 << CS12) | (1 << CS11)); // clear CS12 and CS11
+	TCCR1B |= (1 << CS10);                  // set CS10 for no prescaler
+	
+	TCNT1 = 0;                              // clear counter value
+	TIFR1 |= (1 << OCF1A);                  // clear compare flag
+}
+
+
+void timer_delay_ms(uint16_t ms){
+	while (ms--){
+		uint16_t ticks = 16000; // 1 ms = 16000 ticks at 16 MHz
+
+		OCR1AH = (ticks >> 8);
+		OCR1AL = (ticks & 0xFF);
+
+		TCNT1 = 0;
+		TIFR1 |= (1 << OCF1A);
+
+		while (!(TIFR1 & (1 << OCF1A)));
+	}
+}
+
+void timer_delay_us(uint16_t us){
+	uint16_t ticks = us * 16; // 1 us = 16 ticks
+
+	OCR1AH = (ticks >> 8);
+	OCR1AL = (ticks & 0xFF);
+
+	TCNT1 = 0;
+	TIFR1 |= (1 << OCF1A);
+
+	while (!(TIFR1 & (1 << OCF1A)));
+}
 
 
 ///////////////////////
@@ -46,21 +104,18 @@ bool show_voltage = false;
 
 
 void BUTTON_Init(void){
-	DDRE &= ~(1 << PE4); // set button as input
-	PORTE |= (1 << PE4); // pull-up resistor
-	EICRB &= ~(1 << ISC41);  // enable interrput on any logical change (01)
-	EICRB |= (1 << ISC40);
-	EIMSK |= (1 << INT4); // interrupt mask reg
+	DDRE &= ~(1 << PE4);                     // set button as input
+	PORTE |= (1 << PE4);                     // pull-up resistor
+	EICRB &= ~((1 << ISC41) | (1 << ISC40)); // clear both regs
+	EICRB |= (1 << ISC41);                   // set ISC40 (01)
 
-	sei();
+	EIMSK |= (1 << INT4);                    // interrupt mask reg
 } 
 
 ISR(INT4_vect) {
-	if(is_adc_on)
-		is_adc_on = false;
-	else
-		is_adc_on = true;
+	button_pressed = true;
 }
+
 
 ////////////////////
 ////    LEDs    ////
@@ -72,7 +127,7 @@ void LED_Init(void){
 	// startup animation
 	for(int i = 0; i < 6; i++){
 		PORTC ^= (1 << PC5) | (1 << PC4) | (1 << PC3);
-		_delay_ms(5000);
+		timer_delay_ms(500);
 	}
 }
 
@@ -83,7 +138,7 @@ void LED_Init(void){
 
 
 void ADC_Init(void){
-	ADMUX = 1 << REFS0; // select avcc & adc0
+	ADMUX = 1 << REFS0;                                                // select avcc & adc0
 	ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0); // enable adc & set prescaler to 128
 }
 
@@ -94,7 +149,7 @@ void ADC_Init(void){
 
 
 void LCD_GPIO_Init(void){
-	LCD_DATA_DDR = 0xFF; // All PORTA pins as output
+	LCD_DATA_DDR = 0xFF;                                   // PORTA pins as output
 	LCD_CTRL_DDR |= (1 << LCD_RS_BIT) | (1 << LCD_EN_BIT); // RS and EN as output
 }
 
@@ -108,9 +163,9 @@ void LCD_write_byte(uint8_t byte, uint8_t rs){
 
 	// Pulse EN
 	LCD_CTRL_PORT |= (1 << LCD_EN_BIT);
-	_delay_ms(1);
+	timer_delay_ms(1);
 	LCD_CTRL_PORT &= ~(1 << LCD_EN_BIT);
-	_delay_ms(1);
+	timer_delay_ms(1);
 }
 
 void LCD_send_command(uint8_t cmd){
@@ -129,13 +184,13 @@ void LCD_set_cursor(uint8_t row, uint8_t col){
 
 void LCD_Init(void){
 	LCD_GPIO_Init();
-	_delay_ms(40);
+	timer_delay_ms(40);
 
 	LCD_send_command(0x38); // 8-bit, 2-line, 5x8 font
-	LCD_send_command(0x0C); // Display ON, cursor OFF
-	LCD_send_command(0x06); // Entry mode
-	LCD_send_command(0x01); // Clear display
-	_delay_ms(100);
+	LCD_send_command(0x0C); // display ON, cursor OFF
+	LCD_send_command(0x06); // entry mode
+	LCD_send_command(0x01); // clear display
+	timer_delay_ms(100);
 }
 
 void LCD_print(const char *str){
@@ -144,10 +199,19 @@ void LCD_print(const char *str){
 	}
 }
 
+
+/////////////////////////////
+////    MAIN FUNCTION    ////
+/////////////////////////////
+
+
 int main(void){
+	sei();
+	Timer0_Init();
+	Timer1_Init();
 	LCD_Init();
-	LCD_set_cursor(0, 1);       // Top-left corner
-	LCD_print("VOLTAGE SCREEN"); // Writes to LCD
+	LCD_set_cursor(0, 1);     
+	LCD_print("VOLTAGE SCREEN"); 
 	
 	LED_Init();
 	BUTTON_Init();
@@ -156,41 +220,43 @@ int main(void){
 	uint16_t adc_value;
 	float voltage_value;
 	while (1){
+		if (button_pressed && (millis_counter - last_button_time > 1000)) {                      // 1s debounce
+			is_adc_on = !is_adc_on;
+			last_button_time = millis_counter;
+			button_pressed = false;
+		}
+
 		if(is_adc_on){
-			ADCSRA |= (1 << ADSC);                                             // start adc
-			while (ADCSRA & (1 << ADSC));                                      // wait for conversion
-			adc_value = (ADCL | (ADCH << 8));                                  // get value
+			ADCSRA |= (1 << ADSC);                                                               // start adc
+			while (ADCSRA & (1 << ADSC));                                                        // wait for conversion
+			adc_value = (ADCL | (ADCH << 8));                                                    // get adc voltage value
 			
-			voltage_value = ((float)(adc_value) * MAX_VOLTS) / ADC_MAX_VALUE;  // convert value
-			const char *voltage_value_string[10];
-			uint16_t voltage_mV = (uint16_t)(voltage_value * 1000);  // Convert to millivolts
-			sprintf(voltage_value_string, "%u.%02uV  ", voltage_mV / 1000, (voltage_mV % 1000));
+			voltage_value = ((float)(adc_value) * MAX_VOLTS) / ADC_MAX_VALUE;                    // convert value
+			char voltage_value_string[10];
+			uint16_t voltage_mV = (uint16_t)(voltage_value * 1000);                              // convert to millivolts
+			sprintf(voltage_value_string, "%u.%02uV  ", voltage_mV / 1000, (voltage_mV % 1000)); // convert milivolts to Volts in string (sprintf doesn't seem to work from float to string directly...)
 			LCD_set_cursor(1, 1);
 			LCD_print("Voltage ");
 			LCD_print(voltage_value_string);
 
-			if(voltage_value < 1.5)
-				PORTC |= (1 << PC5);
-			else if(voltage_value < 0)
-				PORTC &= ~(1 << GREEN_LED);
+			PORTC |= (1 << GREEN_LED);                                                           // Green LED always on if ADC is on
 			
-			if(voltage_value > 1.5 && voltage_value < 3.5)
+			if(voltage_value > 1.5)                                                              // Orange LED turned on if voltage is above 1.5V
 				PORTC |= (1 << ORANGE_LED);
 			else if(voltage_value < 1.5)
 				PORTC &= ~(1 << ORANGE_LED);
 			
-			if(voltage_value >= 3.5)
+			if(voltage_value >= 3.5)                                                             // Red LED turned on if voltage is above 3.5V
 				PORTC |= (1 << RED_LED);
 			else if(voltage_value < 3.5)
 				PORTC &= ~(1 << RED_LED);
 
-			for(volatile int i = 0; i < 30000; i++);
-			for(volatile int i = 0; i < 30000; i++);
-				//_delay_ms(10000);                                                  // 1000ms was instant, somehow, so i put 10000ms and it seems to work now
-			}
-		else
-			LCD_set_cursor(1, 3);
-			LCD_print("System OFF");
+			timer_delay_ms(1000);
+		}else{
+			PORTC &= ~((1 << GREEN_LED) | (1 << ORANGE_LED) | (1 << RED_LED));                   // Green LED always off if ADC is on & turn off the other LEDs
+			LCD_set_cursor(1, 0);
+			LCD_print("   System OFF   ");
 		}
+	}
 }
 
