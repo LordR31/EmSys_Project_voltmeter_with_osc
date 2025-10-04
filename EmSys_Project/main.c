@@ -2,14 +2,15 @@
 #include <avr/interrupt.h>
 #include <stdbool.h>
 
-#define F_CPU 16000000UL
+#define F_CPU 16000000UL // cpu freq
+
+
+// ADC
 #define BAUD 9600
 #define MYUBRR ((F_CPU / (16UL * BAUD)) - 1)
-#define MAX_VOLTS 5.048 // Volts (max value for adc, for AVCC)
+#define MAX_VOLTS 5 // Volts (max value for adc, for AVCC)
 #define ADC_MAX_VALUE 1023 // 10 bit adc -> 0 - 1023 range
-#define CMD_BUFFER_SIZE 32
-volatile char command_buffer[CMD_BUFFER_SIZE];
-volatile uint8_t cmd_index = 0;
+#define NUM_SAMPLES 10
 
 
 // LED PINS
@@ -33,6 +34,9 @@ volatile bool button_pressed = false;
 volatile uint32_t last_button_time = 0;
 volatile uint32_t millis_counter = 0;
 
+bool is_green_led_on = false;
+bool is_orange_led_on = false;
+bool is_red_led_on = false;
 
 //////////////////////
 ////    TIMER0    ////
@@ -124,11 +128,10 @@ ISR(INT4_vect) {
 void LED_Init(void){
 	DDRC |= (1 << PC5) | (1 << PC4) | (1 << PC3); // set pins as output
 	
-	// startup animation
-	for(int i = 0; i < 6; i++){
-		PORTC ^= (1 << PC5) | (1 << PC4) | (1 << PC3);
-		timer_delay_ms(500);
-	}
+	// startup LEDs check
+	PORTC |= (1 << PC5) | (1 << PC4) | (1 << PC3);
+	timer_delay_ms(1000);
+	PORTC ^= (1 << PC5) | (1 << PC4) | (1 << PC3);
 }
 
 
@@ -210,8 +213,8 @@ int main(void){
 	Timer0_Init();
 	Timer1_Init();
 	LCD_Init();
-	LCD_set_cursor(0, 1);     
-	LCD_print("VOLTAGE SCREEN"); 
+	//LCD_set_cursor(0, 1);     
+	//LCD_print("VOLTAGE SCREEN"); 
 	
 	LED_Init();
 	BUTTON_Init();
@@ -220,39 +223,72 @@ int main(void){
 	uint16_t adc_value;
 	float voltage_value;
 	while (1){
-		if (button_pressed && (millis_counter - last_button_time > 1000)) {                      // 1s debounce
+		if (button_pressed && (millis_counter - last_button_time > 300)) {                      // 1s debounce
 			is_adc_on = !is_adc_on;
 			last_button_time = millis_counter;
 			button_pressed = false;
 		}
 
 		if(is_adc_on){
-			ADCSRA |= (1 << ADSC);                                                               // start adc
-			while (ADCSRA & (1 << ADSC));                                                        // wait for conversion
-			adc_value = (ADCL | (ADCH << 8));                                                    // get adc voltage value
+			is_green_led_on = true;
+			uint32_t adc_sum = 0;
+			for (uint8_t i = 0; i < NUM_SAMPLES; i++) {
+				ADCSRA |= (1 << ADSC);                        // Start ADC
+				while (ADCSRA & (1 << ADSC));                 // Wait for conversion
+				adc_sum += (ADCL | (ADCH << 8));              // Accumulate result
+				timer_delay_ms(1);                            // Small delay between samples
+			}
+
+			adc_value = adc_sum / NUM_SAMPLES;                // Average result
+			char adc_value_string[10];
+			sprintf(adc_value_string, "%u ", adc_value);
+			LCD_set_cursor(0,3);
+			LCD_print(adc_value_string);
+			float calibrated_max_volts = 0;
+			if(is_green_led_on & !is_orange_led_on & !is_red_led_on)
+				calibrated_max_volts = MAX_VOLTS + 0.037;
+			else if(is_orange_led_on & !is_red_led_on)
+				calibrated_max_volts = MAX_VOLTS + 0.029;
+			else if(is_red_led_on)
+				calibrated_max_volts = MAX_VOLTS + 0.017;
 			
-			voltage_value = ((float)(adc_value) * MAX_VOLTS) / ADC_MAX_VALUE;                    // convert value
+			voltage_value = ((float)(adc_value) * calibrated_max_volts) / ADC_MAX_VALUE;                    // convert value
+			if(is_green_led_on & !is_orange_led_on & !is_red_led_on & (adc_value > 0))
+				voltage_value += 0.010
+			else if(is_red_led_on)
+				voltage_value -= 0.008;
+			
+			
 			char voltage_value_string[10];
 			uint16_t voltage_mV = (uint16_t)(voltage_value * 1000);                              // convert to millivolts
-			sprintf(voltage_value_string, "%u.%02uV  ", voltage_mV / 1000, (voltage_mV % 1000)); // convert milivolts to Volts in string (sprintf doesn't seem to work from float to string directly...)
-			LCD_set_cursor(1, 1);
-			LCD_print("Voltage ");
+			sprintf(voltage_value_string, "     %u.%03uV    ", voltage_mV / 1000, (voltage_mV % 1000)); // convert milivolts to Volts in string (sprintf doesn't seem to work from float to string directly...)
+			LCD_set_cursor(1, 0);
 			LCD_print(voltage_value_string);
 
 			PORTC |= (1 << GREEN_LED);                                                           // Green LED always on if ADC is on
 			
-			if(voltage_value > 1.5)                                                              // Orange LED turned on if voltage is above 1.5V
+			if(voltage_value > 1.5){                                                              // Orange LED turned on if voltage is above 1.5V
 				PORTC |= (1 << ORANGE_LED);
-			else if(voltage_value < 1.5)
+				is_orange_led_on = true;
+			}
+			else if(voltage_value < 1.5){
 				PORTC &= ~(1 << ORANGE_LED);
-			
-			if(voltage_value >= 3.5)                                                             // Red LED turned on if voltage is above 3.5V
+				is_orange_led_on = false;
+			}
+			if(voltage_value >= 3.5){                                                             // Red LED turned on if voltage is above 3.5V
 				PORTC |= (1 << RED_LED);
-			else if(voltage_value < 3.5)
+				is_red_led_on = true;
+			}
+			else if(voltage_value < 3.5){
 				PORTC &= ~(1 << RED_LED);
+				is_red_led_on = false;
+			}
 
 			timer_delay_ms(1000);
 		}else{
+			is_green_led_on = false;
+			is_orange_led_on = false;
+			is_red_led_on = false;
 			PORTC &= ~((1 << GREEN_LED) | (1 << ORANGE_LED) | (1 << RED_LED));                   // Green LED always off if ADC is on & turn off the other LEDs
 			LCD_set_cursor(1, 0);
 			LCD_print("   System OFF   ");
