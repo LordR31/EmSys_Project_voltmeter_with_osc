@@ -6,7 +6,13 @@ adc.c
 
 buttons.c
 
+display.c
+
+glcdfont.c
+
 main.c
+
+spi.c
 
 timers.c
 

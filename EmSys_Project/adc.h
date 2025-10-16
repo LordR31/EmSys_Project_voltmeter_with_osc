@@ -6,7 +6,7 @@
 // ADC
 #define BAUD 9600
 #define MYUBRR ((F_CPU / (16UL * BAUD)) - 1)
-#define MAX_VOLTS 5 // Volts (max value for adc, for AVCC)
+#define MAX_VOLTS 4.970 // Volts (max value for adc, for AVCC)
 #define ADC_MAX_VALUE 1023 // 10 bit adc -> 0 - 1023 range
 #define NUM_SAMPLES 10
 

@@ -13,11 +13,12 @@ void ADC_Init(void){
 float ADC_measure(void){
 	uint32_t adc_sum = 0;
 	for (uint8_t i = 0; i < NUM_SAMPLES; i++) {
-		ADCSRA |= (1 << ADSC);                        // Start ADC
-		while (ADCSRA & (1 << ADSC));                 // Wait for conversion
-		adc_sum += (ADCL | (ADCH << 8));              // Accumulate result
-		timer_delay_ms(1);                            // Small delay between samples
+		ADCSRA |= (1 << ADSC);                                    // start ADC
+		while (ADCSRA & (1 << ADSC));                             // wait for conversion
+		adc_sum += (ADCL | (ADCH << 8));                          // add result
+		timer_delay_ms(1);                                        // small delay between samples
 	}
+	float average_value = adc_sum / NUM_SAMPLES;                  // get the average
+	return ((float)(average_value) * MAX_VOLTS) / ADC_MAX_VALUE;  // convert value and return it
 
-	return adc_sum / NUM_SAMPLES;                     // Average result
 }
