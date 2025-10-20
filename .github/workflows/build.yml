@@ -1,0 +1,34 @@
+name: Build Firmware
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install AVR toolchain
+      run: |
+        sudo apt update
+        sudo apt install -y gcc-avr avr-libc
+
+    - name: Compile firmware
+      run: |
+        avr-gcc -mmcu=atmega2560 -Os -o firmware.elf \
+        main.c adc.c buttons.c spi.c timers.c touch.c glcdfont.c
+        avr-objcopy -O ihex firmware.elf firmware.hex
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: compiled-binaries
+        path: |
+          firmware.elf
+          firmware.hex
