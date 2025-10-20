@@ -43,7 +43,8 @@ C_SRCS +=  \
 ../glcdfont.c \
 ../main.c \
 ../spi.c \
-../timers.c
+../timers.c \
+../touch.c
 
 
 PREPROCESSING_SRCS += 
@@ -59,7 +60,8 @@ display.o \
 glcdfont.o \
 main.o \
 spi.o \
-timers.o
+timers.o \
+touch.o
 
 OBJS_AS_ARGS +=  \
 adc.o \
@@ -68,7 +70,8 @@ display.o \
 glcdfont.o \
 main.o \
 spi.o \
-timers.o
+timers.o \
+touch.o
 
 C_DEPS +=  \
 adc.d \
@@ -77,7 +80,8 @@ display.d \
 glcdfont.d \
 main.d \
 spi.d \
-timers.d
+timers.d \
+touch.d
 
 C_DEPS_AS_ARGS +=  \
 adc.d \
@@ -86,7 +90,8 @@ display.d \
 glcdfont.d \
 main.d \
 spi.d \
-timers.d
+timers.d \
+touch.d
 
 OUTPUT_FILE_PATH +=EmSys_Project.elf
 
@@ -145,6 +150,13 @@ LINKER_SCRIPT_DEP+=
 	
 
 ./timers.o: .././timers.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DNDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\ATmega_DFP\2.2.509\include"  -Os -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -mrelax -Wall -mmcu=atmega2560 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\ATmega_DFP\2.2.509\gcc\dev\atmega2560" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+./touch.o: .././touch.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
 	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DNDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\ATmega_DFP\2.2.509\include"  -Os -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -mrelax -Wall -mmcu=atmega2560 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\ATmega_DFP\2.2.509\gcc\dev\atmega2560" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 

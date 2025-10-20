@@ -83,10 +83,16 @@ void display_draw_pixel(uint16_t x, uint16_t y, uint16_t color);
 void display_draw_line(int x0, int y0, int x1, int y1, uint16_t color);
 
 uint16_t scale_voltage_to_y(float value, float v_min, float v_max);
-void plot_points(float points[], int count, float v_max, float v_min);
+void plot_points_digital(float points[], int count, float v_max, float v_min);
+void plot_points_line(float points[], int count, float v_max, float v_min);
+void clear_plot();
 
 void draw_cursor();
-float move_cursor(int direction);
+void erase_cursor();
+void move_cursor(int direction);
+float get_cursor_voltage();
 
 void draw_indicator_leds(float voltage);
+
+void erase_voltage_zone();
 #endif

@@ -16,3 +16,5 @@ spi.c
 
 timers.c
 
+touch.c
+

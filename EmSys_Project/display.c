@@ -16,6 +16,11 @@
 #define PLOT_Y_BOTTOM 207
 #define PLOT_X_SPACING 10  
 
+#define VOLTAGE_X_BEGIN 0
+#define VOLTAGE_X_END 184
+#define VOLTAGE_Y_BEGIN 0
+#define VOLTAGE_Y_END 35
+
 #define MAX_POINTS 25
 
 typedef struct {
@@ -278,7 +283,7 @@ uint16_t scale_voltage_to_y(float value, float v_min, float v_max) {
 
 
 void plot_points_digital(float points[], int count, float v_max, float v_min) {
-	display_fill_rect(PLOT_X_START - 1, PLOT_Y_TOP - 1, PLOT_X_END - PLOT_X_START + 5, PLOT_Y_BOTTOM - PLOT_Y_TOP + 5, COLOR_BLACK);
+	display_fill_rect(PLOT_X_START - 5, PLOT_Y_TOP - 5, PLOT_X_END - PLOT_X_START + 5, PLOT_Y_BOTTOM - PLOT_Y_TOP + 5, COLOR_BLACK);
 	
 	if (count < 1) return;
 
@@ -303,16 +308,19 @@ void plot_points_digital(float points[], int count, float v_max, float v_min) {
 		}
 
 		// Draw X marker
-		display_draw_line(x - 1, y - 1, x + 1, y + 1, COLOR_BLUE);
-		display_draw_line(x - 1, y + 1, x + 1, y - 1, COLOR_BLUE);
+		display_draw_line(x - 2, y - 2, x + 2, y + 2, COLOR_BLUE);
+		display_draw_line(x - 2, y + 2, x + 2, y - 2, COLOR_BLUE);
 
 		x += PLOT_X_SPACING;
 		if (x > PLOT_X_END) break;
 	}
+	
+	if(cursor_active)
+		draw_cursor();
 }
 
 void plot_points_line(float points[], int count, float v_max, float v_min) {
-	display_fill_rect(PLOT_X_START - 1, PLOT_Y_TOP - 1, PLOT_X_END - PLOT_X_START + 5, PLOT_Y_BOTTOM - PLOT_Y_TOP + 5, COLOR_BLACK);
+	display_fill_rect(PLOT_X_START - 2, PLOT_Y_TOP - 2, PLOT_X_END - PLOT_X_START + 5, PLOT_Y_BOTTOM - PLOT_Y_TOP + 5, COLOR_BLACK);
 
 	if (count < 2) return;
 
@@ -335,8 +343,8 @@ void plot_points_line(float points[], int count, float v_max, float v_min) {
 		display_draw_line(x0, y0, x1, y1, COLOR_GREEN);
 
 		// Draw X marker
-		display_draw_line(x0 - 1, y0 - 1, x0 + 1, y0 + 1, COLOR_BLUE);
-		display_draw_line(x0 - 1, y0 + 1, x0 + 1, y0 - 1, COLOR_BLUE);
+		display_draw_line(x0 - 2, y0 - 2, x0 + 2, y0 + 2, COLOR_BLUE);
+		display_draw_line(x0 - 2, y0 + 2, x0 + 2, y0 - 2, COLOR_BLUE);
 
 		x += PLOT_X_SPACING;
 		if (x1 > PLOT_X_END) break;
@@ -349,36 +357,45 @@ void plot_points_line(float points[], int count, float v_max, float v_min) {
 		plot_coords[plot_count - 1].value = points[plot_count - 1];
 
 		// Draw final X marker
-		display_draw_line(x - 1, plot_coords[plot_count - 1].y - 1, x + 1, plot_coords[plot_count - 1].y + 1, COLOR_BLUE);
-		display_draw_line(x - 1, plot_coords[plot_count - 1].y + 1, x + 1, plot_coords[plot_count - 1].y - 1, COLOR_BLUE);
+		display_draw_line(x - 2, plot_coords[plot_count - 1].y - 2, x + 2, plot_coords[plot_count - 1].y + 2, COLOR_BLUE);
+		display_draw_line(x - 2, plot_coords[plot_count - 1].y + 2, x + 2, plot_coords[plot_count - 1].y - 2, COLOR_BLUE);
 	}
+	
+	if(cursor_active)
+		draw_cursor();
+}
+
+void clear_plot(){
+	display_fill_rect(PLOT_X_START - 2, PLOT_Y_TOP - 20, PLOT_X_END - PLOT_X_START + 5, PLOT_Y_BOTTOM + 20, COLOR_BLACK);
 }
 
 void draw_cursor() {
 	cursor_active = 1;
-	cursor_position = 0;
 
 	uint16_t x = plot_coords[cursor_position].x;
 	uint16_t y = plot_coords[cursor_position].y;
 
-	display_draw_line(x, 67, x, y, COLOR_RED);
+	display_draw_line(x, PLOT_Y_TOP, x, PLOT_Y_BOTTOM, COLOR_RED);
 
 	// Draw red X at cursor point
-	display_draw_line(x - 1, y - 1, x + 1, y + 1, COLOR_RED);
-	display_draw_line(x - 1, y + 1, x + 1, y - 1, COLOR_RED);
+	display_draw_line(x - 2, y - 2, x + 2, y + 2, COLOR_RED);
+	display_draw_line(x - 2, y + 2, x + 2, y - 2, COLOR_RED);
 }
 
-float move_cursor(int direction) {
+void erase_cursor(){
+	display_draw_line(plot_coords[cursor_position].x, PLOT_Y_TOP, plot_coords[cursor_position].x, PLOT_Y_BOTTOM, COLOR_BLACK);
+	display_draw_line(plot_coords[cursor_position].x - 2, plot_coords[cursor_position].y - 2, plot_coords[cursor_position].x + 2, plot_coords[cursor_position].y + 2, COLOR_BLUE);
+	display_draw_line(plot_coords[cursor_position].x - 2, plot_coords[cursor_position].y + 2, plot_coords[cursor_position].x + 2, plot_coords[cursor_position].y - 2, COLOR_BLUE);
+}
+
+void move_cursor(int direction) {
 	if (!cursor_active || plot_count == 0) return;
 
-	// Erase old cursor line
-	uint16_t old_x = plot_coords[cursor_position].x;
-	uint16_t old_y = plot_coords[cursor_position].y;
-	display_draw_line(old_x, 67, old_x, old_y, COLOR_BLACK);
+	erase_cursor();
 
 	// Restore blue X at old point
-	display_draw_line(old_x - 1, old_y - 1, old_x + 1, old_y + 1, COLOR_BLUE);
-	display_draw_line(old_x - 1, old_y + 1, old_x + 1, old_y - 1, COLOR_BLUE);
+	display_draw_line(plot_coords[cursor_position].x - 2, plot_coords[cursor_position].y - 2, plot_coords[cursor_position].x + 2, plot_coords[cursor_position].y + 2, COLOR_BLUE);
+	display_draw_line(plot_coords[cursor_position].x - 2, plot_coords[cursor_position].y + 2, plot_coords[cursor_position].x + 2, plot_coords[cursor_position].y - 2, COLOR_BLUE);
 
 	// Update position
 	cursor_position += direction;
@@ -388,19 +405,20 @@ float move_cursor(int direction) {
 	// Draw new cursor line
 	uint16_t new_x = plot_coords[cursor_position].x;
 	uint16_t new_y = plot_coords[cursor_position].y;
-	display_draw_line(new_x, 67, new_x, new_y, COLOR_RED);
+	display_draw_line(new_x, PLOT_Y_TOP, new_x, PLOT_Y_BOTTOM, COLOR_RED);
 
 	// Draw red X at new point
-	display_draw_line(new_x - 1, new_y - 1, new_x + 1, new_y + 1, COLOR_RED);
-	display_draw_line(new_x - 1, new_y + 1, new_x + 1, new_y - 1, COLOR_RED);
-	
+	display_draw_line(new_x - 2, new_y - 2, new_x + 2, new_y + 2, COLOR_RED);
+	display_draw_line(new_x - 2, new_y + 2, new_x + 2, new_y - 2, COLOR_RED);
+}
+
+float get_cursor_voltage(){
 	return plot_coords[cursor_position].value;
 }
 
 void draw_indicator_leds(float voltage){
-	// 0.5v
 	set_text_size(2);
-	int led_count = (int)(voltage / 0.5f);  // max 10 for 5V
+	int led_count = (int)(voltage / 2.4f);  // led every 2.4V
 	if (led_count > 10) 
 		led_count = 10;
 	
@@ -414,13 +432,16 @@ void draw_indicator_leds(float voltage){
 			display_set_color(COLOR_RED);
 		if(i < led_count){
 			display_print("*", current_x + i * 12, 5);
-			display_print("*", current_x + i * 12, 15);
+			display_print("*", current_x + i * 12, 15);	
 		}else{
 			display_print(" ", current_x + i * 12, 5);
 			display_print(" ", current_x + i * 12, 15);
 		}
 	}
+}
 
+void erase_voltage_zone(){
+	display_fill_rect(VOLTAGE_X_BEGIN, VOLTAGE_Y_BEGIN, VOLTAGE_X_END, VOLTAGE_Y_END, COLOR_BLACK);
 }
 
 
