@@ -5,10 +5,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-// Pin definitions (match Arduino wiring)
-#define DISPLAY_CS   PB6  // Arduino pin 12
-#define DISPLAY_RST  PB5  // Arduino pin 11
-#define DISPLAY_DC   PB4  // Arduino pin 10
+#define DISPLAY_CS   PB6  // pin 12
+#define DISPLAY_RST  PB5  // pin 11
+#define DISPLAY_DC   PB4  // pin 10
 
 #define DISPLAY_PORT PORTB
 #define DISPLAY_DDR  DDRB
@@ -45,10 +44,7 @@
 #define COLOR_BLUE    0x001F
 #define COLOR_ORANGE  0xFD20 
 
-// Initialization
 void Display_Init(void);
-
-// Command/data helpers
 void display_send_command(uint8_t cmd);
 void display_data(uint8_t data);
 void display_command_start(void);
@@ -56,43 +52,28 @@ void display_command_end(void);
 void display_data_start(void);
 void display_data_end(void);
 void display_write_byte(uint8_t data);
-
-// Drawing
 void display_set_window(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 void display_set_rotation(uint8_t mode);
-
 void set_text_size(uint8_t size);
-
-// Color control
 void display_set_color(uint16_t color);
 void display_set_background(uint16_t color);
-
-// Pixel-level color write
 void display_write_color(uint16_t color);
 void display_write(void);
 void display_write_background(void);
-
-// Text rendering
 void display_fill_rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
 void display_draw_char(char c, uint16_t x, uint16_t y);
 void display_print(const char* str, uint16_t x, uint16_t y);
-
 void display_fill_color(uint16_t color);
-
 void display_draw_pixel(uint16_t x, uint16_t y, uint16_t color);
 void display_draw_line(int x0, int y0, int x1, int y1, uint16_t color);
-
 uint16_t scale_voltage_to_y(float value, float v_min, float v_max);
 void plot_points_digital(float points[], int count, float v_max, float v_min);
 void plot_points_line(float points[], int count, float v_max, float v_min);
 void clear_plot();
-
 void draw_cursor();
 void erase_cursor();
 void move_cursor(int direction);
 float get_cursor_voltage();
-
 void draw_indicator_leds(float voltage);
-
 void erase_voltage_zone();
 #endif

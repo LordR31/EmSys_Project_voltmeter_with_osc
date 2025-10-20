@@ -3,12 +3,12 @@
 #include <avr/pgmspace.h>
 #include "glcdfont.c"
 
-#define CS_LOW()   DISPLAY_PORT &= ~(1 << DISPLAY_CS)
-#define CS_HIGH()  DISPLAY_PORT |=  (1 << DISPLAY_CS)
-#define DC_LOW()   DISPLAY_PORT &= ~(1 << DISPLAY_DC)
-#define DC_HIGH()  DISPLAY_PORT |=  (1 << DISPLAY_DC)
-#define RST_LOW()  DISPLAY_PORT &= ~(1 << DISPLAY_RST)
-#define RST_HIGH() DISPLAY_PORT |=  (1 << DISPLAY_RST)
+#define CS_LOW()   DISPLAY_PORT &= ~(1 << DISPLAY_CS)   // driver for setting Chip Select low
+#define CS_HIGH()  DISPLAY_PORT |=  (1 << DISPLAY_CS)   // driver for setting Chip Select high
+#define DC_LOW()   DISPLAY_PORT &= ~(1 << DISPLAY_DC)   // driver for setting Data/Command low     low  -> command
+#define DC_HIGH()  DISPLAY_PORT |=  (1 << DISPLAY_DC)   // driver for setting Data/Command high    high -> data
+#define RST_LOW()  DISPLAY_PORT &= ~(1 << DISPLAY_RST)  // driver for setting Reset low
+#define RST_HIGH() DISPLAY_PORT |=  (1 << DISPLAY_RST)  // driver for setting Reset high
 
 #define PLOT_X_START   20
 #define PLOT_X_END    260
@@ -23,10 +23,10 @@
 
 #define MAX_POINTS 25
 
-typedef struct {
-	uint16_t x;
-	uint16_t y;
-	float value;
+typedef struct {      // struct which holds the point data, saved after scaling to the voltage and plotting them
+	uint16_t x;       // x coord
+	uint16_t y;       // y coord
+	float value;      // voltage value
 } PlotPoint;
 
 PlotPoint plot_coords[MAX_POINTS];
@@ -45,11 +45,17 @@ int cursor_position = 0;
 
 
 void display_send_command(uint8_t cmd) {
-	CS_LOW(); DC_LOW(); SPI_transfer(cmd); CS_HIGH();
+	CS_LOW(); 
+	DC_LOW(); 
+	SPI_transfer(cmd); 
+	CS_HIGH();
 }
 
 void display_data(uint8_t data) {
-	CS_LOW(); DC_HIGH(); SPI_transfer(data); CS_HIGH();
+	CS_LOW(); 
+	DC_HIGH(); 
+	SPI_transfer(data);
+	 CS_HIGH();
 }
 
 void display_command_start(void) {
@@ -76,7 +82,7 @@ void display_write_byte(uint8_t data) {
 	SPI_transfer(data);
 }
 
-static const uint8_t PROGMEM initcmd[] = {
+static const uint8_t PROGMEM initcmd[] = { // display initiation sequence
 	0xEF, 3, 0x03, 0x80, 0x02,
 	0xCF, 3, 0x00, 0xC1, 0x30,
 	0xED, 4, 0x64, 0x03, 0x12, 0x81,
@@ -139,15 +145,31 @@ void Display_Init(void) {
 	}
 }
 
-void display_set_rotation(uint8_t mode) {
+void display_set_rotation(uint8_t mode) {  // set the display orientation using MADCTL (Memory Acess Control Reg)
 	display_rotation = mode % 4;
 	uint8_t madctl = 0;
 
 	switch (display_rotation) {
-		case 0: madctl = MADCTL_MX | MADCTL_BGR; display_width = 240; display_height = 320; break;
-		case 1: madctl = MADCTL_MV | MADCTL_BGR; display_width = 320; display_height = 240; break;
-		case 2: madctl = MADCTL_MY | MADCTL_BGR; display_width = 240; display_height = 320; break;
-		case 3: madctl = MADCTL_MX | MADCTL_MY | MADCTL_MV | MADCTL_BGR; display_width = 320; display_height = 240; break;
+		case 0: 
+			madctl = MADCTL_MX | MADCTL_BGR; 
+			display_width = 240; 
+			display_height = 320; 
+			break;
+		case 1: 
+			madctl = MADCTL_MV | MADCTL_BGR; 
+			display_width = 320; 
+			display_height = 240; 
+			break;
+		case 2: 
+			madctl = MADCTL_MY | MADCTL_BGR; 
+			display_width = 240; 
+			display_height = 320; 
+			break;
+		case 3: 
+			madctl = MADCTL_MX | MADCTL_MY | MADCTL_MV | MADCTL_BGR; 
+			display_width = 320; 
+			display_height = 240; 
+			break;
 	}
 
 	display_send_command(ILI9341_MADCTL);
@@ -213,7 +235,6 @@ void display_fill_rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t 
 	display_data_end();
 }
 
-
 void display_draw_char(char c, uint16_t x, uint16_t y) {
 	if (c < 32 || c > 127) return;
 
@@ -273,7 +294,7 @@ void display_draw_line(int x0, int y0, int x1, int y1, uint16_t color) {
 	}
 }
 
-uint16_t scale_voltage_to_y(float value, float v_min, float v_max) {
+uint16_t scale_voltage_to_y(float value, float v_min, float v_max) {   // scale the viewform viewer's range automatically to better see the wave variations when differences are small
 	if (value < v_min) value = v_min;
 	if (value > v_max) value = v_max;
 
@@ -290,25 +311,21 @@ void plot_points_digital(float points[], int count, float v_max, float v_min) {
 	uint16_t x = PLOT_X_START;
 	plot_count = (count > MAX_POINTS) ? MAX_POINTS : count;
 
-	for (int i = 0; i < plot_count; i++) {
+	for (int i = 0; i < plot_count; i++) {                        // go through every point
 		uint16_t y = scale_voltage_to_y(points[i], v_min, v_max);
 
-		// Save coordinates
-		plot_coords[i].x = x;
+		plot_coords[i].x = x;             // save coordinates and value inside the struct array
 		plot_coords[i].y = y;
 		plot_coords[i].value = points[i];
 
-		// Draw vertical line from bottom to voltage level
-		display_draw_line(x, 207, x, y, COLOR_GREEN);
+		display_draw_line(x, 207, x, y, COLOR_GREEN); // draw vertical line from bottom to voltage level
 
-		// Optional: horizontal line to next point
-		if (i < plot_count - 1) {
+		if (i < plot_count - 1) {                                             // horizontal line to connecting the points
 			uint16_t next_y = scale_voltage_to_y(points[i + 1], v_min, v_max);
 			display_draw_line(x, y, x + 10, next_y, COLOR_GREEN);
 		}
 
-		// Draw X marker
-		display_draw_line(x - 2, y - 2, x + 2, y + 2, COLOR_BLUE);
+		display_draw_line(x - 2, y - 2, x + 2, y + 2, COLOR_BLUE); // draw X marker on point position
 		display_draw_line(x - 2, y + 2, x + 2, y - 2, COLOR_BLUE);
 
 		x += PLOT_X_SPACING;
@@ -327,45 +344,34 @@ void plot_points_line(float points[], int count, float v_max, float v_min) {
 	uint16_t x = PLOT_X_START;
 	plot_count = (count > MAX_POINTS) ? MAX_POINTS : count;
 
-	for (int i = 1; i < plot_count; i++) {
-		uint16_t x0 = x;
-		uint16_t x1 = x + 10;
+	for (int i = 0; i < plot_count; i++) {
+    uint16_t x0 = x;
+    uint16_t y0 = scale_voltage_to_y(points[i], v_min, v_max);
 
-		uint16_t y0 = scale_voltage_to_y(points[i - 1], v_min, v_max);
-		uint16_t y1 = scale_voltage_to_y(points[i], v_min, v_max);
+    plot_coords[i].x = x0;
+    plot_coords[i].y = y0;
+    plot_coords[i].value = points[i];
 
-		// Save coordinates for point i-1
-		plot_coords[i - 1].x = x0;
-		plot_coords[i - 1].y = y0;
-		plot_coords[i - 1].value = points[i - 1];
+    // Draw X marker
+    display_draw_line(x0 - 2, y0 - 2, x0 + 2, y0 + 2, COLOR_BLUE);
+    display_draw_line(x0 - 2, y0 + 2, x0 + 2, y0 - 2, COLOR_BLUE);
 
-		// Draw connecting line
-		display_draw_line(x0, y0, x1, y1, COLOR_GREEN);
+    // Draw line to next point if it exists
+    if (i < plot_count - 1) {
+        uint16_t x1 = x + PLOT_X_SPACING;
+        uint16_t y1 = scale_voltage_to_y(points[i + 1], v_min, v_max);
+        display_draw_line(x0, y0, x1, y1, COLOR_GREEN);
+    }
 
-		// Draw X marker
-		display_draw_line(x0 - 2, y0 - 2, x0 + 2, y0 + 2, COLOR_BLUE);
-		display_draw_line(x0 - 2, y0 + 2, x0 + 2, y0 - 2, COLOR_BLUE);
-
-		x += PLOT_X_SPACING;
-		if (x1 > PLOT_X_END) break;
-	}
-
-	// Save final point
-	if (plot_count >= 2) {
-		plot_coords[plot_count - 1].x = x;
-		plot_coords[plot_count - 1].y = scale_voltage_to_y(points[plot_count - 1], v_min, v_max);
-		plot_coords[plot_count - 1].value = points[plot_count - 1];
-
-		// Draw final X marker
-		display_draw_line(x - 2, plot_coords[plot_count - 1].y - 2, x + 2, plot_coords[plot_count - 1].y + 2, COLOR_BLUE);
-		display_draw_line(x - 2, plot_coords[plot_count - 1].y + 2, x + 2, plot_coords[plot_count - 1].y - 2, COLOR_BLUE);
-	}
+    x += PLOT_X_SPACING;
+    if (x > PLOT_X_END) break;
+}
 	
 	if(cursor_active)
 		draw_cursor();
 }
 
-void clear_plot(){
+void clear_plot(){ // clear the waveform viewer area
 	display_fill_rect(PLOT_X_START - 2, PLOT_Y_TOP - 20, PLOT_X_END - PLOT_X_START + 5, PLOT_Y_BOTTOM + 20, COLOR_BLACK);
 }
 
@@ -377,7 +383,7 @@ void draw_cursor() {
 
 	display_draw_line(x, PLOT_Y_TOP, x, PLOT_Y_BOTTOM, COLOR_RED);
 
-	// Draw red X at cursor point
+	// draw red X at cursor point
 	display_draw_line(x - 2, y - 2, x + 2, y + 2, COLOR_RED);
 	display_draw_line(x - 2, y + 2, x + 2, y - 2, COLOR_RED);
 }
@@ -393,21 +399,21 @@ void move_cursor(int direction) {
 
 	erase_cursor();
 
-	// Restore blue X at old point
+	// restore blue X at old point
 	display_draw_line(plot_coords[cursor_position].x - 2, plot_coords[cursor_position].y - 2, plot_coords[cursor_position].x + 2, plot_coords[cursor_position].y + 2, COLOR_BLUE);
 	display_draw_line(plot_coords[cursor_position].x - 2, plot_coords[cursor_position].y + 2, plot_coords[cursor_position].x + 2, plot_coords[cursor_position].y - 2, COLOR_BLUE);
 
-	// Update position
+	// update cursor position
 	cursor_position += direction;
 	if (cursor_position < 0) cursor_position = 0;
 	if (cursor_position >= plot_count) cursor_position = plot_count - 1;
 
-	// Draw new cursor line
+	// draw new cursor line
 	uint16_t new_x = plot_coords[cursor_position].x;
 	uint16_t new_y = plot_coords[cursor_position].y;
 	display_draw_line(new_x, PLOT_Y_TOP, new_x, PLOT_Y_BOTTOM, COLOR_RED);
 
-	// Draw red X at new point
+	// draw red X at new point
 	display_draw_line(new_x - 2, new_y - 2, new_x + 2, new_y + 2, COLOR_RED);
 	display_draw_line(new_x - 2, new_y + 2, new_x + 2, new_y - 2, COLOR_RED);
 }
