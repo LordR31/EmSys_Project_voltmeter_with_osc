@@ -31,5 +31,5 @@ jobs:
       with:
         name: compiled-binaries
         path: |
-          firmware.elf
-          firmware.hex
+          EmSys_Project/firmware.elf
+          EmSys_Project/firmware.hex
