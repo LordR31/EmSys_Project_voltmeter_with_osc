@@ -1,0 +1,26 @@
+name: Auto Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Auto Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.event.head_commit.message, 'fix:') || 
+          startsWith(github.event.head_commit.message, 'feat:') || 
+          startsWith(github.event.head_commit.message, 'refactor:')
+      with:
+        tag_name: v1.${{ github.run_number }}
+        name: "Auto Release v1.${{ github.run_number }}"
+        body: "Triggered by commit: ${{ github.event.head_commit.message }}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
