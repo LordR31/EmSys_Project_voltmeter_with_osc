@@ -1,0 +1,13 @@
+theme:
+  name: material
+
+site_name: Voltmeter & Waveform Viewer Project
+nav:
+  - Home: index.md
+  - Hardware:
+      - Board: board.md
+      - ADC: adc.md
+      - Voltmeter: voltmeter.md
+      - Buttons: buttons.md
+      - Display: display.md
+  
