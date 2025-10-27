@@ -2,11 +2,11 @@
 #include "touch.h"
 
 void Touch_IRQ_Init(void){
-	DDRD &= ~(1 << PD2);                                 // PD2 as input
-	PORTD |= (1 << PD2);                                 // Pull-up ON
+	DDRD &= ~(1 << TOUCH_IRQ_PIN);                       // PD2 as input
+	PORTD |= (1 << TOUCH_IRQ_PIN);                       // Pull-up ON
 	
-	EICRA |= (1 << ISC21);                               // ISC2 = 10 ? falling edge
-	EICRA &= ~(1 << ISC20);
+	EICRA &= ~(1 << ISC20);                              // clear ISC20
+	EICRA |= (1 << ISC21);                               // set ISC21 (10 falling edge)
 	EIMSK |= (1 << INT2);                                // Enable INT2
 }
 
@@ -23,13 +23,12 @@ uint16_t touch_spi_transfer(uint8_t command) {
 }
 
 uint16_t read_touch_x(void) {                            // function to get the x coord
-	return touch_spi_transfer(0x90);
+	return touch_spi_transfer(GET_X_COMMAND);
 }
 
 uint16_t read_touch_y(void) {                            // function to get the y coord
-	return touch_spi_transfer(0xD0);
+	return touch_spi_transfer(GET_Y_COMMAND);
 }
-
 
 uint8_t check_touch_buttons(uint16_t x, uint16_t y){     // function to if the touch was accidental or on purpose (it was a button press) 
 	if(x >= BUTTON_X_START & x <= BUTTON_X_END)          // if we are within the limits of the button menu for X

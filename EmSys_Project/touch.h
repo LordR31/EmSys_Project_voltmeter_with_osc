@@ -1,6 +1,10 @@
 #ifndef TOUCH_H_
 #define TOUCH_H_
 
+#define TOUCH_IRQ_PIN PD2
+#define GET_X_COMMAND 0x90
+#define GET_Y_COMMAND 0xD0
+
 #define BUTTON_X_START 3562
 #define BUTTON_X_END 4000
 

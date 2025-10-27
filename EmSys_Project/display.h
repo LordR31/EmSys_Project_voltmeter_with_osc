@@ -4,6 +4,7 @@
 #include <avr/io.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #define DISPLAY_CS   PB6  // pin 12
 #define DISPLAY_RST  PB5  // pin 11
@@ -44,6 +45,8 @@
 #define COLOR_BLUE    0x001F
 #define COLOR_ORANGE  0xFD20 
 
+// FUNCTII UI
+
 void Display_Init(void);
 void display_send_command(uint8_t cmd);
 void display_data(uint8_t data);
@@ -76,4 +79,13 @@ void move_cursor(int direction);
 float get_cursor_voltage();
 void draw_indicator_leds(float voltage);
 void erase_voltage_zone();
+void draw_power_on_screen();
+void draw_ui();
+void draw_voltmeter(bool is_cursor_on);
+void draw_voltage_type(bool is_high_voltage);
+void draw_cursor_warning();
+void draw_toggle_warning();
+void print_voltage(bool is_cursor_on, float voltage_value);
+void print_min_max_voltage(bool is_plot_on, float min_value, float max_value);
+void print_cursor_voltage(float voltage_value);
 #endif

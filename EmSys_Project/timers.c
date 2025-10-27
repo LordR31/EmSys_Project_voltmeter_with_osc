@@ -1,29 +1,5 @@
 #include "timers.h"
 
-volatile uint32_t millis_counter = 0;
-
-
-//////////////////////
-////    TIMER0    ////
-//////////////////////
-
-
-void Timer0_Init(void){
-	TCCR0A = 0x00;                          // reset counter config
-	
-	TCCR0B &= ~(1 << CS02);                 // clear CS02
-	TCCR0B |= (1 << CS01) | (1 << CS00);    // set CS00 & CS01 for 64 prescaler (but this is a bit too slow still, 1.024ms instead of 1 ms flat for ovf => preload the counter)
-	
-	TCNT0 = 6;                              // preload counter value to get exactly 1ms for ovf
-	TIMSK0 |= (1 << TOIE0);                 // enable Timer0 overflow interrupt
-}
-
-
-//////////////////////
-////    TIMER1    ////
-//////////////////////
-
-
 void Timer1_Init(void){
 	TCCR1A = 0x00;                          // reset counter config
 	
