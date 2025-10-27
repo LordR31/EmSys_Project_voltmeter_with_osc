@@ -4,8 +4,6 @@
 #include <avr/io.h>
 #include <stdbool.h>
 
-void start_button_init(void);
-void cursor_buttons_init(void);
-void toggle_votalge_button_init(void);
+void button_init(char port, int pin, int isc0, int isc1, int interrupt);
 
 #endif /* BUTTONS_H_ */
