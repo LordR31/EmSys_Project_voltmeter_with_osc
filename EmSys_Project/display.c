@@ -328,10 +328,11 @@ void plot_points_digital(float points[], int count, float v_max, float v_min) {
 
 		display_draw_line(x, 207, x, y, COLOR_GREEN);                                                                                   // draw vertical line from bottom to voltage level
 
+		/*
 		if (i < plot_count - 1) {                                                                                                       // if not the last point
 			uint16_t next_y = scale_voltage_to_y(points[i + 1], v_min, v_max);                                                          // get next point's y
 			display_draw_line(x, y, x + 10, next_y, COLOR_GREEN);                                                                       // draw horizontal connector line
-		}
+		}*/
 
 		display_draw_line(x - 2, y - 2, x + 2, y + 2, COLOR_BLUE);                                                                      // draw X marker on point position
 		display_draw_line(x - 2, y + 2, x + 2, y - 2, COLOR_BLUE);
