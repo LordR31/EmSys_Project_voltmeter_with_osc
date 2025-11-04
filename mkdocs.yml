@@ -10,4 +10,7 @@ nav:
       - Voltmeter: voltmeter.md
       - Buttons: buttons.md
       - Display: display.md
-  
+  - Software:
+      - How to flash the board: howto.md
+      - Setting up AVRDUDE: avrdude.md
+  - DEMO: demo.md

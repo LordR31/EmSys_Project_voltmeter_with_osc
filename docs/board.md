@@ -22,3 +22,9 @@ It offers generous resources for a embedded applications and for this project we
 
 
 ![Pinout Diagram](img/JADE M1 Pinout.png)
+
+# Perf Board
+
+For the hardware part, it is recomended to solder the components to a Perf Board. This is a schematic to use for placing the components.
+
+![Perf Board Planner](img/perf_board_planner.png)
