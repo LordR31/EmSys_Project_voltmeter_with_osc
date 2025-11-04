@@ -1,6 +1,8 @@
 #ifndef TOUCH_H_
 #define TOUCH_H_
 
+#include "stdbool.h"
+
 #define TOUCH_IRQ_PIN PD2
 #define GET_X_COMMAND 0x90
 #define GET_Y_COMMAND 0xD0
@@ -24,5 +26,6 @@ uint16_t touch_spi_transfer(uint8_t command);
 uint16_t read_touch_x(void);
 uint16_t read_touch_y(void);
 uint8_t check_touch_buttons(uint16_t x, uint16_t y);
+void execute_button_command(int which_button);
 
 #endif /* TOUCH_H_ */

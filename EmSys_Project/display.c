@@ -31,6 +31,7 @@ typedef struct {                                                                
 } PlotPoint;
 
 PlotPoint plot_coords[MAX_POINTS];
+int plot_index = 0;
 int plot_count = 0;
 
 uint16_t display_width = 240;
@@ -311,77 +312,111 @@ uint16_t scale_voltage_to_y(float value, float v_min, float v_max) {            
 	return PLOT_Y_BOTTOM - (uint16_t)(scale * (PLOT_Y_BOTTOM - PLOT_Y_TOP));                                                            // map to screen y range 
 }
 
-void plot_points_digital(float points[], int count, float v_max, float v_min) {
-	display_fill_rect(PLOT_X_START - 5, PLOT_Y_TOP - 5, PLOT_X_END - PLOT_X_START + 5, PLOT_Y_BOTTOM - PLOT_Y_TOP + 5, COLOR_BLACK);    // clear the plot area with a black rectangle
-	
-	if (count < 1) return;                                                                                                              // skip if there are no points
+void store_points(float points[], int count, float v_min, float v_max) {
+	if (count > MAX_POINTS)
+	count = MAX_POINTS;
 
-	uint16_t x = PLOT_X_START;                                                                                                          // start plotting from the left edge
-	plot_count = (count > MAX_POINTS) ? MAX_POINTS : count;                                                                             // limit the number of points to max allowed
+	for (int i = 0; i < count; i++) {
+		uint16_t x = PLOT_X_START + i * PLOT_X_SPACING;
+		uint16_t y = scale_voltage_to_y(points[i], v_min, v_max);
 
-	for (int i = 0; i < plot_count; i++) {                                                                                              // go through every point
-		uint16_t y = scale_voltage_to_y(points[i], v_min, v_max);                                                                       // scale voltage to screen y coordinate
-
-		plot_coords[i].x = x;                                                                                                           // save x coordinate
-		plot_coords[i].y = y;                                                                                                           // save y coordinate
-		plot_coords[i].value = points[i];                                                                                               // save raw voltage value
-
-		display_draw_line(x, 207, x, y, COLOR_GREEN);                                                                                   // draw vertical line from bottom to voltage level
-
-		/*
-		if (i < plot_count - 1) {                                                                                                       // if not the last point
-			uint16_t next_y = scale_voltage_to_y(points[i + 1], v_min, v_max);                                                          // get next point's y
-			display_draw_line(x, y, x + 10, next_y, COLOR_GREEN);                                                                       // draw horizontal connector line
-		}*/
-
-		display_draw_line(x - 2, y - 2, x + 2, y + 2, COLOR_BLUE);                                                                      // draw X marker on point position
-		display_draw_line(x - 2, y + 2, x + 2, y - 2, COLOR_BLUE);
-
-		x += PLOT_X_SPACING;                                                                                                            // move to next x position
-		if (x > PLOT_X_END) break;                                                                                                      // stop if we reached the end of the plot area
+		plot_coords[i].x = x;
+		plot_coords[i].y = y;
+		plot_coords[i].value = points[i];
 	}
-	
-	if(cursor_active)                                                                                                                   // if cursor is enabled, draw it
-	draw_cursor();
+
+	plot_count = count;
 }
 
 
-void plot_points_line(float points[], int count, float v_max, float v_min) {
-	display_fill_rect(PLOT_X_START - 2, PLOT_Y_TOP - 2, PLOT_X_END - PLOT_X_START + 5, PLOT_Y_BOTTOM - PLOT_Y_TOP + 5, COLOR_BLACK);    // clear the plot area with a black rectangle
 
-	if (count < 2) return;                                                                                                              // skip if there are fewer than 2 points
+void plot_points_digital(float points[], int count, float v_max, float v_min) {
+	if (count < 1)
+		return;                                                                                                                         // skip if there are no points
 
-	uint16_t x = PLOT_X_START;                                                                                                          // start plotting from the left edge
-	plot_count = (count > MAX_POINTS) ? MAX_POINTS : count;                                                                             // limit the number of points to max allowed
+	if(count > MAX_POINTS)                                                                                                              // limit the number of points to max allowed
+		plot_count = MAX_POINTS;                                                                                                        // *should* always be ignored
+	else
+		plot_count = count;
 
-	for (int i = 0; i < plot_count; i++) {
-		uint16_t x0 = x;                                                                                                                // current x position
-		uint16_t y0 = scale_voltage_to_y(points[i], v_min, v_max);                                                                      // scale voltage to screen y coordinate
+	clear_plot_line(plot_count);                                                                                                        // clear previous frame using stored coords
+	store_points(points, plot_count, v_min, v_max);                                                                                     // store the scaled points into the plot_coords buffer
 
-		plot_coords[i].x = x0;                                                                                                          // save x coordinate
-		plot_coords[i].y = y0;                                                                                                          // save y coordinate
-		plot_coords[i].value = points[i];                                                                                               // save raw voltage value
+	for (int i = 0; i < plot_count; i++) {                                                                                              // go through every point
+		uint16_t x = plot_coords[i].x;                                                                                                  // get x coordinate from buffer
+		uint16_t y = plot_coords[i].y;                                                                                                  // get y coordinate from buffer
 
-		display_draw_line(x0 - 2, y0 - 2, x0 + 2, y0 + 2, COLOR_BLUE);                                                                  // draw X marker on point position
-		display_draw_line(x0 - 2, y0 + 2, x0 + 2, y0 - 2, COLOR_BLUE);
-
-		if (i < plot_count - 1) {                                                                                                       // if not the last point
-			uint16_t x1 = x + PLOT_X_SPACING;                                                                                           // next x position
-			uint16_t y1 = scale_voltage_to_y(points[i + 1], v_min, v_max);                                                              // next y position
-			display_draw_line(x0, y0, x1, y1, COLOR_GREEN);                                                                             // draw line to next point
-		}
-
-		x += PLOT_X_SPACING;                                                                                                            // move to next x position
-		if (x > PLOT_X_END) break;                                                                                                      // stop if we reached the end of the plot area
+		display_draw_line(x, PLOT_Y_BOTTOM, x, y, COLOR_GREEN);                                                                         // draw vertical line from bottom to voltage level
+		display_draw_line(x - 2, y - 2, x + 2, y + 2, COLOR_BLUE);                                                                      // draw X marker on point position
+		display_draw_line(x - 2, y + 2, x + 2, y - 2, COLOR_BLUE);
 	}
-	
+
 	if(cursor_active)                                                                                                                   // if cursor is enabled, draw it
 		draw_cursor();
 }
 
 
+
+
+void plot_points_line(float points[], int count, float v_max, float v_min) {
+    if (count < 2) 
+		return;
+
+    clear_plot_line(plot_count);                      // clear previous frame using stored coords
+    store_points(points, count, v_min, v_max);        // update buffer with new scaled points
+
+    for (int i = 0; i < plot_count; i++) {
+        uint16_t x0 = plot_coords[i].x;
+        uint16_t y0 = plot_coords[i].y;
+
+        display_draw_line(x0 - 2, y0 - 2, x0 + 2, y0 + 2, COLOR_BLUE);  // draw X marker
+        display_draw_line(x0 - 2, y0 + 2, x0 + 2, y0 - 2, COLOR_BLUE);
+
+        if (i < plot_count - 1) {
+            uint16_t x1 = plot_coords[i + 1].x;
+            uint16_t y1 = plot_coords[i + 1].y;
+            display_draw_line(x0, y0, x1, y1, COLOR_GREEN);             // draw connecting line
+        }
+    }
+
+    if (cursor_active)
+        draw_cursor();
+}
+
+
+void restore_point(){
+	if(is_digital_line){
+		display_draw_line(plot_coords[cursor_position].x, 207, plot_coords[cursor_position].x, plot_coords[cursor_position].y, COLOR_GREEN);
+	}
+	
+	display_draw_line(plot_coords[cursor_position].x - 2, plot_coords[cursor_position].y - 2, plot_coords[cursor_position].x + 2, plot_coords[cursor_position].y + 2, COLOR_BLUE);  // redraw blue X
+	display_draw_line(plot_coords[cursor_position].x - 2, plot_coords[cursor_position].y + 2, plot_coords[cursor_position].x + 2, plot_coords[cursor_position].y - 2, COLOR_BLUE);
+}
+
 void clear_plot() { 
-	display_fill_rect(PLOT_X_START - 2, PLOT_Y_TOP - 20, PLOT_X_END - PLOT_X_START + 5, PLOT_Y_BOTTOM - PLOT_Y_TOP + 45, COLOR_BLACK);  // clear the waveform viewer area
+	display_fill_rect(PLOT_X_START - 2, PLOT_Y_TOP - 20, PLOT_X_END - PLOT_X_START + 25, PLOT_Y_BOTTOM - PLOT_Y_TOP + 43, COLOR_BLACK);  // clear the waveform viewer area
+}
+
+void toggle_plot() {
+	display_fill_rect(PLOT_X_START - 2, PLOT_Y_TOP - 2, PLOT_X_END - PLOT_X_START + 5, PLOT_Y_BOTTOM - PLOT_Y_TOP + 5, COLOR_BLACK);  // clear the waveform viewer area
+}
+
+void clear_plot_line(int count){
+	if (!is_digital_line) {
+		display_draw_line(plot_coords[0].x - 2, plot_coords[0].y - 2, plot_coords[0].x + 2, plot_coords[0].y + 2, COLOR_BLACK);
+		display_draw_line(plot_coords[0].x - 2, plot_coords[0].y + 2, plot_coords[0].x + 2, plot_coords[0].y - 2, COLOR_BLACK);
+		for (int i = 1; i < count; i++) {
+			display_draw_line(plot_coords[i].x - 2, plot_coords[i].y - 2, plot_coords[i].x + 2, plot_coords[i].y + 2, COLOR_BLACK);
+			display_draw_line(plot_coords[i].x - 2, plot_coords[i].y + 2, plot_coords[i].x + 2, plot_coords[i].y - 2, COLOR_BLACK);
+			display_draw_line(plot_coords[i - 1].x, plot_coords[i - 1].y, plot_coords[i].x, plot_coords[i].y, COLOR_BLACK);
+		}
+	}else {
+		for (int i = 0; i < count; i++) {
+			display_draw_line(plot_coords[i].x, PLOT_Y_BOTTOM, plot_coords[i].x, plot_coords[i].y, COLOR_BLACK);                          // clear vertical sample line
+			display_draw_line(plot_coords[i].x - 2, plot_coords[i].y - 2, plot_coords[i].x + 2, plot_coords[i].y + 2, COLOR_BLACK);       // clear X marker
+			display_draw_line(plot_coords[i].x - 2, plot_coords[i].y + 2, plot_coords[i].x + 2, plot_coords[i].y - 2, COLOR_BLACK);
+		}
+	}
 }
 
 void draw_cursor() {
@@ -411,9 +446,7 @@ void move_cursor(int direction) {
 
 	erase_cursor();                                                                                                                     // remove current cursor visuals
 
-	display_draw_line(plot_coords[cursor_position].x - 2, plot_coords[cursor_position].y - 2, plot_coords[cursor_position].x + 2, plot_coords[cursor_position].y + 2, COLOR_BLUE);  // redraw blue X
-	display_draw_line(plot_coords[cursor_position].x - 2, plot_coords[cursor_position].y + 2, plot_coords[cursor_position].x + 2, plot_coords[cursor_position].y - 2, COLOR_BLUE);
-
+	restore_point();
 	                                                                                                                                    // update cursor position
 	cursor_position += direction;                                                                                                       // move cursor left or right
 	if (cursor_position < 0) cursor_position = 0;                                                                                       // clamp to first point
@@ -431,11 +464,18 @@ float get_cursor_voltage() {
 	return plot_coords[cursor_position].value;                                                                                          // return voltage value at current cursor position
 }
 
-void draw_indicator_leds(float voltage) {
+void draw_indicator_leds(float voltage, bool is_high_voltage) {
 	set_text_size(2);                                                                                                                   // set text size for LED indicators
-	int led_count = (int)(voltage / 2.4f);                                                                                              // one led every 2.4V
-	if (led_count > 10)
-	led_count = 10;                                                                                                                     // clamp to max 10 leds
+	int led_count;
+	if(is_high_voltage){
+		led_count = (int)(voltage / 2.4f);                                                                                              // one led every 2.4V
+		if (led_count > 10)
+			led_count = 10;                                                                                                                     // clamp to max 10 leds
+	}else{
+		led_count = (int)(voltage / 0.5f);                                                                                              // one led every 2.4V
+		if (led_count > 10)
+		led_count = 10;
+	}
 	
 	int current_x = 200;                                                                                                                // starting x position for leds
 	for (int i = 0; i < 10; i++) {
@@ -568,4 +608,10 @@ void print_cursor_voltage(float voltage_value){
 	display_set_color(COLOR_BLUE);
 	set_text_size(2);
 	display_print(cursor_voltage_string, 100, 15);                                       // print the cursor voltage value (in the Voltmeter area)	
+}
+
+void insert_plot_points(float *plot_points, float point){
+	for(int i = 1; i < MAX_POINTS; i++)
+	plot_points[i - 1] = plot_points[i];
+	plot_points[MAX_POINTS - 1] = point;
 }

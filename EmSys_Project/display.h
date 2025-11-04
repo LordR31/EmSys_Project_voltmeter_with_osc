@@ -45,6 +45,8 @@
 #define COLOR_BLUE    0x001F
 #define COLOR_ORANGE  0xFD20 
 
+extern bool is_digital_line;
+
 // FUNCTII UI
 
 void Display_Init(void);
@@ -70,14 +72,18 @@ void display_fill_color(uint16_t color);
 void display_draw_pixel(uint16_t x, uint16_t y, uint16_t color);
 void display_draw_line(int x0, int y0, int x1, int y1, uint16_t color);
 uint16_t scale_voltage_to_y(float value, float v_min, float v_max);
+void store_point(float value, float v_min, float v_max);
 void plot_points_digital(float points[], int count, float v_max, float v_min);
 void plot_points_line(float points[], int count, float v_max, float v_min);
 void clear_plot();
+void toggle_plot();
+void clear_plot_line(int count);
+void restore_point();
 void draw_cursor();
 void erase_cursor();
 void move_cursor(int direction);
 float get_cursor_voltage();
-void draw_indicator_leds(float voltage);
+void draw_indicator_leds(float voltage, bool is_high_voltage);
 void erase_voltage_zone();
 void draw_power_on_screen();
 void draw_ui();
@@ -88,4 +94,5 @@ void draw_toggle_warning();
 void print_voltage(bool is_cursor_on, float voltage_value);
 void print_min_max_voltage(bool is_plot_on, float min_value, float max_value);
 void print_cursor_voltage(float voltage_value);
+void insert_plot_points(float *plot_points, float point);
 #endif
