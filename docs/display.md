@@ -2,15 +2,6 @@
 
 The display used in this project uses an ILI9341 controller and an XPT2046 for resistive touchscreen. It communicates with the board over SPI and it has a resolution of 340x240.
 
-## Spi Configuration
-
-The Spi was configured to run using:
-
-- CPOL
-- CPHA
-- Double speed (SPI2X)
-- pull-up disabled for MOSI
-
 ## The defined UI
 
 When you first power on the board, you are greeted with this screen

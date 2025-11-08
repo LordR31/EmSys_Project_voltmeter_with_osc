@@ -7,6 +7,7 @@ nav:
   - Hardware:
       - Board: board.md
       - ADC: adc.md
+      - SPI: spi.md
       - Voltmeter: voltmeter.md
       - Buttons: buttons.md
       - Display: display.md
