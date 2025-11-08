@@ -10,26 +10,6 @@
 #include "touch.h"
 #include "globals.h"
 
-ISR(INT4_vect) {
-	start_button_pressed = true;
-}
-
-ISR(INT3_vect){
-	voltage_button_pressed = true;
-}
-
-ISR(INT1_vect){
-	right_button_pressed = true;
-}
-
-ISR(INT0_vect){
-	left_button_pressed = true;
-}
-
-ISR(INT2_vect) {
-	touch_pending = true;
-}
-
 int main(void){
 	sei();                                                                                               // enable interrupts                                                               
 	Timer1_Init(); 					                                                                     // init timer 1 for delay_ms and delay_us
@@ -43,34 +23,29 @@ int main(void){
 	Touch_IRQ_Init(); 				                                                                     // init Touch Interrupt pin
 	Display_Init(); 				                                                                     // init the display
 	
-	display_set_rotation(3);                                                                             // landscape inverted
-	display_fill_color(COLOR_BLACK);
+	display_set_rotation(LANDSCAPE_INVERTED);                                                            // set display rotaion
+	display_fill_color(COLOR_BLACK);                                                                     // clear screen
 	
 	while (1){
-		if (start_button_pressed) {                     
-			is_system_on = !is_system_on;
-			display_fill_color(COLOR_BLACK);
-			set_ADC_state(is_system_on);
-			start_button_pressed = false;
+		if (start_button_pressed) {                                                                      // if the start button is pressed
+			is_system_on = !is_system_on;                                                                // toggle system state
+			display_fill_color(COLOR_BLACK);                                                             // clear the screen
+			set_ADC_state(is_system_on);                                                                 // set ADC state based on system state
+			start_button_pressed = false;                                                                // and clear the flag
 		}
 		
-		if (voltage_button_pressed) {       
-			is_high_voltage = !is_high_voltage;
-			voltage_button_pressed = false;
+		if (voltage_button_pressed) {                                                                    // if the voltage mode button is pressed
+			is_high_voltage = !is_high_voltage;                                                          // toggle voltage type
+			voltage_button_pressed = false;                                                              // and clear the flag
 		}
-		if(is_system_on){		
-			draw_voltmeter(is_cursor_on);
-			draw_voltage_type(is_high_voltage);
-			draw_ui();
+		if(is_system_on){		                                                                         // if the system is on
+			draw_ui();                                                                                   // draw the UI
+			draw_voltmeter(is_cursor_on);                                                                // display the voltmeter text
+			draw_voltage_type(is_high_voltage);                                                          // display the voltage type
 			
-			if (touch_pending) {
-				touch_pending = false;
-				
-				uint16_t x = touch_spi_transfer(GET_X_COMMAND);                                                   // get touchscreen x
-				uint16_t y = touch_spi_transfer(GET_Y_COMMAND);                                                   // get touchscreen y
-
-				uint8_t which_button = check_touch_buttons(x, y);                                        // check if it is a button press or not
-				execute_button_command(which_button);                                                    // execute the touch button command
+			if (touch_pending) {                                                                         // if a touch is sensed
+				touch_pending = false;                                                                   // clear the flag
+				touchscreen_process_commad();                                                            // and process the command
 			}
 			
 			voltage_value = ADC_measure(is_high_voltage);                                                // get voltage value from adc, based on voltage type (high or low)
@@ -91,15 +66,15 @@ int main(void){
 					max_value = plot_points[i];
 			}
 			
-			if(!is_holding & is_plot_on){                                                                 // if HOLD is off and the waveform viewer is enabled, keep updating it when new points are recorded
-				if(is_digital_line)
-					plot_points_digital(plot_points, index, max_value, min_value);
-				else
-					plot_points_line(plot_points, index, max_value, min_value);
+			if(!is_holding & is_plot_on){                                                                // if HOLD is off and the waveform viewer is enabled, keep updating it when new points are recorded
+				if(is_digital_line)                                                                      // if it's set to digital
+					plot_points_digital(plot_points, index, max_value, min_value);                       // display the digital mode 
+				else                                                                                     // otherwise
+					plot_points_line(plot_points, index, max_value, min_value);                          // keep it analogue
 			}
 			
-			print_voltage(is_cursor_on, voltage_value);
-			print_min_max_voltage(is_plot_on, min_value, max_value);
+			print_voltage(is_cursor_on, voltage_value);                                                   // display the voltage value
+			print_min_max_voltage(is_plot_on, min_value, max_value);                                      // display min max
 
 			if (is_cursor_on) {                                                          
 				if (right_button_pressed) {                                                              // move cursor right button
@@ -114,9 +89,9 @@ int main(void){
 				cursor_voltage = get_cursor_voltage();                                                   // get the voltage of the point at the cursor position
 				print_cursor_voltage(cursor_voltage);
 			}
-			draw_indicator_leds(voltage_value, is_high_voltage);                                                          // draw the voltage level indicator "LEDs"
-		}else{
-			draw_power_on_screen();
+			draw_indicator_leds(voltage_value, is_high_voltage);                                         // draw the voltage level indicator "LEDs"
+		}else{                                                                                           // IF the system is off
+			draw_power_on_screen();                                                                      // draw the power on screen
 		}
 	}
 }

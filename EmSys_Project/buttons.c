@@ -1,9 +1,31 @@
 #include "buttons.h"
+#include <avr/interrupt.h>
 
 extern bool start_button_pressed;
 extern bool voltage_button_pressed;
 extern bool right_button_pressed;
 extern bool left_button_pressed;
+extern bool touch_pending;
+
+ISR(INT4_vect) {
+	start_button_pressed = true;
+}
+
+ISR(INT3_vect){
+	voltage_button_pressed = true;
+}
+
+ISR(INT1_vect){
+	right_button_pressed = true;
+}
+
+ISR(INT0_vect){
+	left_button_pressed = true;
+}
+
+ISR(INT2_vect) {
+	touch_pending = true;
+}
 
 void button_init(char port, int pin, int isc0, int isc1, int interrupt){
 	switch (port){

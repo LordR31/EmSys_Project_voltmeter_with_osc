@@ -45,6 +45,8 @@
 #define COLOR_BLUE    0x001F
 #define COLOR_ORANGE  0xFD20 
 
+#define LANDSCAPE_INVERTED 3
+
 extern bool is_digital_line;
 
 // FUNCTII UI

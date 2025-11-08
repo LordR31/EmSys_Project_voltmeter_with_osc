@@ -61,57 +61,65 @@ uint8_t check_touch_buttons(uint16_t x, uint16_t y){     // function to if the t
 void execute_button_command(int which_button){
 	switch(which_button){                                                                    // do what the button needs to do
 		case 1:
-		if(!is_plot_on){                                                                 // if the waveform viewer is not ENABLED but the cursor button was pressed
-			draw_cursor_warning();
-			}else{
-			if(!is_cursor_on){                                                           // otherwise, if the waveform viewer is on and the cursor is off
-				draw_cursor();                                                           // turn the cursor on
-				is_cursor_on = true;
-				}else{                                                                   // but if the cursor was already on when the button was pressed
-				erase_cursor();                                                      // erase the cursor (turn it off)
-				erase_voltage_zone();                                                // and clear the Voltmeter area (clear "Cursor: xx.xxxV")
-				is_cursor_on = false;
+			if(!is_plot_on){                                                                 // if the waveform viewer is not ENABLED but the cursor button was pressed
+				draw_cursor_warning();
+				}else{
+				if(!is_cursor_on){                                                           // otherwise, if the waveform viewer is on and the cursor is off
+					draw_cursor();                                                           // turn the cursor on
+					is_cursor_on = true;
+					}else{                                                                   // but if the cursor was already on when the button was pressed
+					erase_cursor();                                                      // erase the cursor (turn it off)
+					erase_voltage_zone();                                                // and clear the Voltmeter area (clear "Cursor: xx.xxxV")
+					is_cursor_on = false;
+				}
 			}
-		}
-		break;
+			break;
 		case 2:
-		is_holding = !is_holding;                                                        // if HOLD is off, turn it on and vice-versa
-		break;
+			is_holding = !is_holding;                                                        // if HOLD is off, turn it on and vice-versa
+			break;
 		case 3:
-		if(is_plot_on){                                                                  // if the waveform viewer is on
-			is_plot_on = false;                                                          // turn it off
-			is_cursor_on = false;                                                        // turn off the cursor
-			is_holding = false;                                                          // turn off HOLD
-			erase_cursor();                                                              // erase the cursor
-			erase_voltage_zone();                                                        // clear the Voltmeter area
-			clear_plot();                                                                // clear the waveform viewer area (erase the plot)
+			if(is_plot_on){                                                                  // if the waveform viewer is on
+				is_plot_on = false;                                                          // turn it off
+				is_cursor_on = false;                                                        // turn off the cursor
+				is_holding = false;                                                          // turn off HOLD
+				erase_cursor();                                                              // erase the cursor
+				erase_voltage_zone();                                                        // clear the Voltmeter area
+				clear_plot();                                                                // clear the waveform viewer area (erase the plot)
 			}else{                                                                           // otherwise,
-			clear_plot();                                                                // clear the waveform viewer area (erase the text to make space for the viewer)
-			is_plot_on = true;                                                           // and turn on the plotting
-		}
+				clear_plot();                                                                // clear the waveform viewer area (erase the text to make space for the viewer)
+				is_plot_on = true;                                                           // and turn on the plotting
+			}
 		break;
 		case 4:
 		if(!is_plot_on){                                                                 // if the waveform viewer is not ENABLED but the toggle button was pressed
-			draw_toggle_warning();
-			}else{                                                                           // otherwise, change from the simple waveform viewer type to the one with samples (vertical lines) and vice-versa
-			if(!is_digital_line){
-				is_digital_line = true;
-				toggle_plot();
-				plot_points_digital(plot_points, index, max_value, min_value);
-				if(is_cursor_on){                                                        // if the cursor was on, erase and redraw it
-					erase_cursor();
-					draw_cursor();
-				}
-				}else{
-				is_digital_line = false;
-				toggle_plot();
-				plot_points_line(plot_points, index, max_value, min_value);
-				if(is_cursor_on){                                                        // if the cursor was on, erase and redraw it
-					erase_cursor();
-					draw_cursor();
+				draw_toggle_warning();
+				}else{                                                                           // otherwise, change from the simple waveform viewer type to the one with samples (vertical lines) and vice-versa
+				if(!is_digital_line){
+					is_digital_line = true;
+					toggle_plot();
+					plot_points_digital(plot_points, index, max_value, min_value);
+					if(is_cursor_on){                                                        // if the cursor was on, erase and redraw it
+						erase_cursor();
+						draw_cursor();
+					}
+					}else{
+					is_digital_line = false;
+					toggle_plot();
+					plot_points_line(plot_points, index, max_value, min_value);
+					if(is_cursor_on){                                                        // if the cursor was on, erase and redraw it
+						erase_cursor();
+						draw_cursor();
+					}
 				}
 			}
-		}
-		break;
+			break;
 	}
+}
+
+void touchscreen_process_commad(){
+	uint16_t x = touch_spi_transfer(GET_X_COMMAND);                                          // get touchscreen x
+	uint16_t y = touch_spi_transfer(GET_Y_COMMAND);                                          // get touchscreen y
+
+	uint8_t which_button = check_touch_buttons(x, y);                                        // check if it is a button press or not
+	execute_button_command(which_button);                                                    // execute the touch button command
 }

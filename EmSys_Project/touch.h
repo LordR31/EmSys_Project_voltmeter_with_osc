@@ -27,5 +27,6 @@ uint16_t read_touch_x(void);
 uint16_t read_touch_y(void);
 uint8_t check_touch_buttons(uint16_t x, uint16_t y);
 void execute_button_command(int which_button);
+void touchscreen_process_commad();
 
 #endif /* TOUCH_H_ */

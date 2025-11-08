@@ -42,9 +42,9 @@ static uint16_t bg_color = 0x0000;
 static uint8_t text_size = 1;
 
 uint8_t display_rotation = 0;
-int cursor_active = 0;
 int cursor_position = 0;
 
+extern bool is_cursor_on;
 
 void display_send_command(uint8_t cmd) {
 	CS_LOW();                                                                                                                           // pull cs low to signal we talk to the display
@@ -351,8 +351,10 @@ void plot_points_digital(float points[], int count, float v_max, float v_min) {
 		display_draw_line(x - 2, y + 2, x + 2, y - 2, COLOR_BLUE);
 	}
 
-	if(cursor_active)                                                                                                                   // if cursor is enabled, draw it
+	if(is_cursor_on)                                                                                                                   // if cursor is enabled, draw it
 		draw_cursor();
+	else
+		erase_cursor();
 }
 
 
@@ -379,8 +381,10 @@ void plot_points_line(float points[], int count, float v_max, float v_min) {
         }
     }
 
-    if (cursor_active)
+    if (is_cursor_on)
         draw_cursor();
+	else
+		erase_cursor();
 }
 
 
@@ -420,8 +424,6 @@ void clear_plot_line(int count){
 }
 
 void draw_cursor() {
-	cursor_active = 1;                                                                                                                  // mark cursor as active
-
 	uint16_t x = plot_coords[cursor_position].x;                                                                                        // get x position from current cursor index
 	uint16_t y = plot_coords[cursor_position].y;                                                                                        // get y position from current cursor index
 
@@ -441,7 +443,7 @@ void erase_cursor() {
 
 
 void move_cursor(int direction) {
-	if (!cursor_active || plot_count == 0)                                                                                              // skip if cursor is inactive or no points to move through
+	if (!is_cursor_on || plot_count == 0)                                                                                               // skip if cursor is inactive or no points to move through
 		return;                                                                                                                                  
 
 	erase_cursor();                                                                                                                     // remove current cursor visuals
