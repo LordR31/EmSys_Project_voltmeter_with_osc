@@ -1,6 +1,6 @@
 # Buttons
 
-There are 4 physical buttons and 4 touchscreen buttons. In this section we are only talking about the physical buttons. The other 4 buttons will be discussed inside the [Touchscreen section](display.md) section of the documentation.
+There are 4 physical buttons and 4 touchscreen buttons. In this section we are only talking about the physical buttons. The other 4 buttons will be discussed inside the [Touchscreen section](display.md/) section of the Display documentation.
 
 All physical buttons are configured to work with interrupts in falling edge mode. As such, they are all connected to a GPIO pin and to the board's GND.
 

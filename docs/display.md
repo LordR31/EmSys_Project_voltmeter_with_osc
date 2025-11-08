@@ -2,6 +2,17 @@
 
 The display used in this project uses an ILI9341 controller and an XPT2046 for resistive touchscreen. It communicates with the board over SPI and it has a resolution of 340x240.
 
+## Spi Configuration
+
+The Spi was configured to run using:
+
+- CPOL
+- CPHA
+- Double speed (SPI2X)
+- pull-up disabled for MOSI
+
+## The defined UI
+
 When you first power on the board, you are greeted with this screen
 
 ![Start-up Screen](img/startup.jpg)
@@ -9,8 +20,6 @@ When you first power on the board, you are greeted with this screen
 After pressing the start button, we enter the Voltmeter mode, where we can measure signal and up to 25 values are recorded. The UI looks like in the following image.
 
 ![Defined UI](img/waveform viewer off.jpg)
-
-## The defined UI
 
 On the top, left side of the UI is the Voltmeter area. When the cursor is turned on, the voltmeter measurement gets pushed slightly upward to make space for the cursor measurement. On the right side, also on top, we can have the area which specifies the Voltage Type (H or L) and the indicator "LEDs" which tell, in a visual manner, the amount of voltage measured. One LED turns on every 2.4V. The last LED is red, to signal maximum voltage, while the previous 3 LEDs are orange, to signal we are close to the maximum voltage.
 

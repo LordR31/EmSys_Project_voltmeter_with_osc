@@ -9,12 +9,11 @@ To get the compiled binaries, go to the [Release](https://github.com/LordR31/Vol
 ## Using AVRDUDE
 To falsh the binaries onto the board we will use AVRDUDE, in Windows Terminal. AVRDUDE needs to be set up before usage. The set up process can be seen [here](avrdude.md). After setting up, we will use the following command:
 
-avrdude -C "C:\avrdude\avrdude.conf" -c wiring -p atmega2560 -P COM4 -b 115200 -D -U flash:w:"firmware.hex":i
+``avrdude -C "C:\avrdude\avrdude.conf" -c wiring -p atmega2560 -P COM4 -b 115200 -D -U flash:w:"firmware.hex":i``
 
 The COM port needs to be changed to match the actual COM Port used by the board. For ease of usage, this command can be stores inside a bat file, as such:
 
-@echo off
-avrdude -C "C:\avrdude\avrdude.conf" -c wiring -p atmega2560 -P COM4 -b 115200 -D -U flash:w:"firmware.hex":i
+<code>@echo off <br> avrdude -C "C:\avrdude\avrdude.conf" -c wiring -p atmega2560 -P COM4 -b 115200 -D -U flash:w:"firmware.hex":i</code>
 
 If the hex file name is changed, or AVRDUDE will be used with a different binary, firmware.hex can be replaces with %1.hex. This will allow the user to call the .bat file with the binary name, so that you do not have to write and change the command every flash.
 
