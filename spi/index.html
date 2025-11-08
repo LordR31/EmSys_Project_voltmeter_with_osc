@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../buttons/">
+        <link rel="prev" href="../adc/">
       
       
-        <link rel="next" href="../software/">
+        <link rel="next" href="../voltmeter/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +20,7 @@
     
     
       
-        <title>Display - Voltmeter & Waveform Viewer Project</title>
+        <title>SPI - Voltmeter & Waveform Viewer Project</title>
       
     
     
@@ -62,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#display" class="md-skip">
+        <a href="#spi" class="md-skip">
           Skip to content
         </a>
       
@@ -98,7 +98,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Display
+              SPI
             
           </span>
         </div>
@@ -299,10 +299,32 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../spi/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    SPI
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -313,6 +335,59 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#display-initialization-sequence" class="md-nav__link">
+    <span class="md-ellipsis">
+      Display Initialization Sequence
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Display Initialization Sequence">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#spi-transfer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Spi Transfer
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#set-display-rotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Set Display Rotation
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -368,32 +443,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Display
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../display/" class="md-nav__link">
         
   
   
@@ -404,86 +457,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#the-defined-ui" class="md-nav__link">
-    <span class="md-ellipsis">
-      The defined UI
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#touchscreen-buttons" class="md-nav__link">
-    <span class="md-ellipsis">
-      Touchscreen Buttons
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Touchscreen Buttons">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#cursor" class="md-nav__link">
-    <span class="md-ellipsis">
-      Cursor
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#hold" class="md-nav__link">
-    <span class="md-ellipsis">
-      Hold
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#wave" class="md-nav__link">
-    <span class="md-ellipsis">
-      Wave
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#toggle" class="md-nav__link">
-    <span class="md-ellipsis">
-      Toggle
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -659,55 +632,19 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-defined-ui" class="md-nav__link">
+  <a href="#display-initialization-sequence" class="md-nav__link">
     <span class="md-ellipsis">
-      The defined UI
+      Display Initialization Sequence
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#touchscreen-buttons" class="md-nav__link">
-    <span class="md-ellipsis">
-      Touchscreen Buttons
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Touchscreen Buttons">
+    <nav class="md-nav" aria-label="Display Initialization Sequence">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#cursor" class="md-nav__link">
+  <a href="#spi-transfer" class="md-nav__link">
     <span class="md-ellipsis">
-      Cursor
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#hold" class="md-nav__link">
-    <span class="md-ellipsis">
-      Hold
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#wave" class="md-nav__link">
-    <span class="md-ellipsis">
-      Wave
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#toggle" class="md-nav__link">
-    <span class="md-ellipsis">
-      Toggle
+      Spi Transfer
     </span>
   </a>
   
@@ -715,6 +652,15 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#set-display-rotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Set Display Rotation
+    </span>
+  </a>
   
 </li>
       
@@ -734,39 +680,34 @@
 
 
 
-<h1 id="display">Display</h1>
-<p>The display used in this project uses an ILI9341 controller and an XPT2046 for resistive touchscreen. It communicates with the board over SPI and it has a resolution of 340x240.</p>
-<h2 id="the-defined-ui">The defined UI</h2>
-<p>When you first power on the board, you are greeted with this screen</p>
-<p><img alt="Start-up Screen" src="../img/startup.jpg" /></p>
-<p>After pressing the start button, we enter the Voltmeter mode, where we can measure signal and up to 25 values are recorded. The UI looks like in the following image.</p>
-<p><img alt="Defined UI" src="../img/waveform%20viewer%20off.jpg" /></p>
-<p>On the top, left side of the UI is the Voltmeter area. When the cursor is turned on, the voltmeter measurement gets pushed slightly upward to make space for the cursor measurement. On the right side, also on top, we can have the area which specifies the Voltage Type (H or L) and the indicator "LEDs" which tell, in a visual manner, the amount of voltage measured. One LED turns on every 2.4V. The last LED is red, to signal maximum voltage, while the previous 3 LEDs are orange, to signal we are close to the maximum voltage.</p>
-<p>On the right side we have the touch buttons, while in the middle, we have the Waveform Viewer area. When the Waveform Viewer is turned off, most of the space is taken by the measurements for the maximum and minimum value for the recorded points.</p>
-<p>When the Waveform Viewer is turned on, two horizontal lines appear on the screen to mark the limits of the Waveform Viewer, on top and bottom. The measurements for the minimum and maximum value get moved to their respective line and the text gets scaled down. They are now used as the upper and lower range for the Waveform Viewer, which has auto-scaling.</p>
-<p><img alt="Waveform Viewer ON" src="../img/waveform%20viewer%20on.jpg" /></p>
-<p>The Waveform Viewer has two modes, a simple mode, where the points are plotted and just connected with dots, and a digital mode, where the samples are also drawn (vertical lines to the points)</p>
-<p><img alt="Digital Waveform Viewer" src="../img/digital%20waveform%20viewer.jpg" /></p>
-<h2 id="touchscreen-buttons">Touchscreen Buttons</h2>
-<p>The button menu on the right side contains the following buttons:</p>
+<h1 id="spi">SPI</h1>
+<p>The Spi peripheral was used to communicate with ILI9341 display controller and XPT2046 touchscreen controller. It was configured to run using:</p>
 <ul>
-<li>Cursor</li>
-<li>Hold</li>
-<li>Wave</li>
-<li>Toggle</li>
+<li>CPOL</li>
+<li>CPHA</li>
+<li>Double speed (SPI2X, 8MHz)</li>
+<li>Pull-up disabled for MOSI</li>
 </ul>
-<h3 id="cursor">Cursor</h3>
-<p>The cursor button enables and disables the cursor. The cursor is a vertical line which can be moved to the left or to the right of the screen using the designated physical buttons, always ending up on a recorded point. It is used to see the voltage of the selected point inside the voltmeter area.</p>
-<p><img alt="Cursor ON" src="../img/cursor%20on.jpg" /></p>
-<p>When pressed while the Waveform Viewer is turned off, a warning message appears, informing the user that the cursor cannot be used without that feature.</p>
-<p><img alt="Cursor Warning" src="../img/cursor%20warning.jpg" /></p>
-<h3 id="hold">Hold</h3>
-<p>The hold button halts voltage recording, making the Waveform Viewer keep the current form. This feature is useful when paired with the cursor, to check up on signal variations.</p>
-<h3 id="wave">Wave</h3>
-<p>The wave button enables or disables the Waveform Viewer. The Waveform Viewer enables the user to see the form of the signal, up to 25 previous points. This feature is useful for detecting changes in signal strenght and, as stated before, it works best when paired with the cursor and the hold feature.</p>
-<h3 id="toggle">Toggle</h3>
-<p>The toggle button is used to toggle between the two modes for the Waveform Viewer. Similar to the cursor button, when pressed while the Waveform Viewer is turned off, a warning message appears, informing the user that the toggle button cannot be used without that feature.</p>
-<p><img alt="Toggle Warning" src="../img/toggle%20warning.jpg" /></p>
+<h2 id="display-initialization-sequence">Display Initialization Sequence</h2>
+<p>Using a logic analizer we can see the waveform for the SPI communication during display initialization:</p>
+<p><img alt="LCD Display Initialization Sequence" src="../img/LCD_Init_Sequence.png" /></p>
+<p>Because the initialization sequence is quite long, a zoomed version, like the one below, is much more useful. Here we can see the bytes being sent and we can compare with the actual initialization code.</p>
+<p><img alt="Zoomed Initialization Sequence" src="../img/LCD_Init_Sequence_Zoomed.png" />.</p>
+<p>Since we are using an Adafruit display, the init sequence uses the same Adafruit initialization matrix. This is a crop of that sequence, to compare against the waveform viewed with the logic analizer.</p>
+<p><img alt="Cropper initialization command" src="../img/init_seq.png" /></p>
+<p>We can see the the zoomed in sequence captured with the logic analizer matches the first line of the initiazliation command.</p>
+<h3 id="spi-transfer">Spi Transfer</h3>
+<p>To further analize how the SPI transfer works, we can zoom in on one of the bytes:</p>
+<p><img alt="Zoomed in SPI Transfer" src="../img/SPI_Transfer.png" /></p>
+<p>Here we can see each bit being sent over SPI: <code>0xEF = 1110_1111</code></p>
+<h2 id="set-display-rotation">Set Display Rotation</h2>
+<p>The logic analizer was also used to show the SPI transfer for setting the display rotation.</p>
+<p><img alt="Set Display Rotation" src="../img/Set_Display_Rotation.png" /></p>
+<p>We can compare this against the actual code:</p>
+<p><img alt="Set Display Rotation Code" src="../img/set_display_rotation_code.png" /></p>
+<p>The system uses Inverted Landscape view. As such, we need to see the values of <code>ILI9341_MADCTL</code>, which is the reg that handles display rotation and the result of <code>MADCTL_MX | MADCTL_MY | MADCTL_MV | MADCTL_BGR</code>.</p>
+<p><img alt="Rotation Regs" src="../img/rotation_reg_values.png" /></p>
+<p>The result of that operation is: <code>0x80 | 0x40 | 0x20 | 0x08 = 0xE8</code></p>
 
 
 
