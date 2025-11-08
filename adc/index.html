@@ -426,6 +426,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../software/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Program Logic
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../howto/" class="md-nav__link">
         
   
@@ -529,8 +552,14 @@
 
 
 <h1 id="adc">ADC</h1>
-<p>The Analog Digital Converter (ADC) used by the Jade M1 Board is a 10bit ADC. The ADC was used to develop the Voltmeter side of the board.</p>
-<p>The ADC was configured to run on channel 0, using AVCC as refference. The prescalar was set to 128 to align it's clock frequency with the recommended range of 50 - 200kHz. It was used with the polling method, not with interrupts.</p>
+<p>The Analog Digital Converter (ADC) used by the Jade M1 Board is a 10bit ADC. The ADC was used to develop the Voltmeter side of the project.</p>
+<p>The ADC was configured as follows:</p>
+<ul>
+<li>using channel 0</li>
+<li>using AVCC as refference</li>
+<li>prescalar was set to 128</li>
+<li>used with the polling method, not with interrupts.</li>
+</ul>
 <p><img alt="ADC Block Schematic" src="../img/ADC.png" /></p>
 
 

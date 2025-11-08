@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../software/">
+        <link rel="prev" href="../display/">
       
       
-        <link rel="next" href="../avrdude/">
+        <link rel="next" href="../howto/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +20,7 @@
     
     
       
-        <title>How to flash the board - Voltmeter & Waveform Viewer Project</title>
+        <title>Program Logic - Voltmeter & Waveform Viewer Project</title>
       
     
     
@@ -62,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#how-to-flash-the-board" class="md-skip">
+        <a href="#program-logic" class="md-skip">
           Skip to content
         </a>
       
@@ -98,7 +98,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              How to flash the board
+              Program Logic
             
           </span>
         </div>
@@ -413,29 +413,6 @@
                 
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../software/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Program Logic
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -448,20 +425,31 @@
         
       
       
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
   
   
   <span class="md-ellipsis">
-    How to flash the board
+    Program Logic
     
   </span>
   
 
-          <span class="md-nav__icon md-icon"></span>
-        </label>
+      </a>
       
-      <a href="./" class="md-nav__link md-nav__link--active">
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../howto/" class="md-nav__link">
         
   
   
@@ -472,53 +460,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#getting-the-binaries" class="md-nav__link">
-    <span class="md-ellipsis">
-      Getting the binaries
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#using-avrdude" class="md-nav__link">
-    <span class="md-ellipsis">
-      Using AVRDUDE
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#avrdude-flags-explained" class="md-nav__link">
-    <span class="md-ellipsis">
-      AVRDUDE Flags Explained
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -596,41 +537,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#getting-the-binaries" class="md-nav__link">
-    <span class="md-ellipsis">
-      Getting the binaries
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#using-avrdude" class="md-nav__link">
-    <span class="md-ellipsis">
-      Using AVRDUDE
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#avrdude-flags-explained" class="md-nav__link">
-    <span class="md-ellipsis">
-      AVRDUDE Flags Explained
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -645,57 +551,19 @@
 
 
 
-<h1 id="how-to-flash-the-board">How to flash the board</h1>
-<p>To flash the Jade M1 board you need to use an AVR programmer. As such, we will use AVRDUDE to flash out binaries onto the board.</p>
-<h2 id="getting-the-binaries">Getting the binaries</h2>
-<p>To get the compiled binaries, go to the <a href="https://github.com/LordR31/Voltmeter-with-Waveform-Viewer/releases">Release</a> tab on the Github Repository and download the .hex file.</p>
-<h2 id="using-avrdude">Using AVRDUDE</h2>
-<p>To falsh the binaries onto the board we will use AVRDUDE, in Windows Terminal. AVRDUDE needs to be set up before usage. The set up process can be seen <a href="../avrdude/">here</a>. After setting up, we will use the following command:</p>
-<p><code>avrdude -C "C:\avrdude\avrdude.conf" -c wiring -p atmega2560 -P COM4 -b 115200 -D -U flash:w:"firmware.hex":i</code></p>
-<p>The COM port needs to be changed to match the actual COM Port used by the board. For ease of usage, this command can be stores inside a bat file, as such:</p>
-<p><code>@echo off <br> avrdude -C "C:\avrdude\avrdude.conf" -c wiring -p atmega2560 -P COM4 -b 115200 -D -U flash:w:"firmware.hex":i</code></p>
-<p>If the hex file name is changed, or AVRDUDE will be used with a different binary, firmware.hex can be replaces with %1.hex. This will allow the user to call the .bat file with the binary name, so that you do not have to write and change the command every flash.</p>
-<p>After saving the .bat file, it can be simply called from terminal with</p>
-<p>.\flash.bat or, if using the "%1.hex" syntax, .\flash.bat name.hex.</p>
-<h2 id="avrdude-flags-explained">AVRDUDE Flags Explained</h2>
-<table>
-<thead>
-<tr>
-<th>Flag</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>-C:</td>
-<td>Specifies the path to the configuration file (avrdude.conf).</td>
-</tr>
-<tr>
-<td>-c</td>
-<td>Defines the programmer type. wiring is used for boards like Arduino Mega. Jade M1 uses ATMega2560</td>
-</tr>
-<tr>
-<td>-p</td>
-<td>Specifies the target microcontroller. In this case, it's the ATmega2560.</td>
-</tr>
-<tr>
-<td>-P</td>
-<td>Sets the communication port. COM4 is the serial port connected to the board. This needs to be changed based on actual port used.</td>
-</tr>
-<tr>
-<td>-b</td>
-<td>Sets the baud rate for communication. 115200 is typical for Arduino Mega uploads.</td>
-</tr>
-<tr>
-<td>-D</td>
-<td>Disables auto erase before writing flash. Useful for preserving EEPROM or speeding up uploads.</td>
-</tr>
-<tr>
-<td>-U flash:w:"firmware.hex":i</td>
-<td>Uploads (w) the file firmware.hex to the flash memory. The :i indicates Intel Hex format.</td>
-</tr>
-</tbody>
-</table>
+<h1 id="program-logic">Program Logic</h1>
+<p>The program logic can be divided into 3 parts, starting from the high level software to the low level hardware. </p>
+<h1 id="block-diagram">Block Diagram</h1>
+<p>The first and upper layer is the Application Layer. This is the high level software that was developed for the program to be able to run and it includes all the functions and libraries / modules developed.</p>
+<p>The next layer is the Service Layer, which refers to the ISR functions used by the system for the hardware and software buttons, as well as the Timer1 delay functions.</p>
+<p>Lastly, at the lowest level, there is the Hardware Layer, which is represented by the hardware components and peripherals used in this project. It includes the SPI and ADC peripherals, as well as the hardware buttons used for various system functions.</p>
+<p><img alt="Bloc Diagram" src="../img/Diagrama_Bloc_Sistem.drawio.svg" /></p>
+<h1 id="program-work-flow">Program Work Flow</h1>
+<p>The program logic is best understood when paired with a flow chart, such as the one below.</p>
+<p>After the system is powered-on, we wait for the user to press the Start Button. When that happens, we turn on the ADC and clear the screen. We check to see if we keep the voltage type as is or toggle it, then we check if we need to process any touchscreen command. We measure the voltage using the ADC, we store the points and get the minimum and maximum values among the last 25 measurements.</p>
+<p>We check to see if the Waveform Viewer is turned on and if it is set to display in digital or analogue mode. If the Waveform Viewer is on, we check if the cursor is on and if any of the cursor buttons were pressed, then we get cursor voltage.</p>
+<p>Finally, we draw the indicator LEDs and the loop can begin again.</p>
+<p><img alt="Flow Chart" src="../img/Flow_Chart.svg" /></p>
 
 
 

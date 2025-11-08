@@ -12,7 +12,7 @@
         <link rel="prev" href="../buttons/">
       
       
-        <link rel="next" href="../howto/">
+        <link rel="next" href="../software/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -398,6 +398,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#spi-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Spi Configuration
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#the-defined-ui" class="md-nav__link">
     <span class="md-ellipsis">
       The defined UI
@@ -518,6 +527,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../software/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Program Logic
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../howto/" class="md-nav__link">
         
   
@@ -613,6 +645,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#spi-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Spi Configuration
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#the-defined-ui" class="md-nav__link">
     <span class="md-ellipsis">
       The defined UI
@@ -690,11 +731,19 @@
 
 <h1 id="display">Display</h1>
 <p>The display used in this project uses an ILI9341 controller and an XPT2046 for resistive touchscreen. It communicates with the board over SPI and it has a resolution of 340x240.</p>
+<h2 id="spi-configuration">Spi Configuration</h2>
+<p>The Spi was configured to run using:</p>
+<ul>
+<li>CPOL</li>
+<li>CPHA</li>
+<li>Double speed (SPI2X)</li>
+<li>pull-up disabled for MOSI</li>
+</ul>
+<h2 id="the-defined-ui">The defined UI</h2>
 <p>When you first power on the board, you are greeted with this screen</p>
 <p><img alt="Start-up Screen" src="../img/startup.jpg" /></p>
 <p>After pressing the start button, we enter the Voltmeter mode, where we can measure signal and up to 25 values are recorded. The UI looks like in the following image.</p>
 <p><img alt="Defined UI" src="../img/waveform%20viewer%20off.jpg" /></p>
-<h2 id="the-defined-ui">The defined UI</h2>
 <p>On the top, left side of the UI is the Voltmeter area. When the cursor is turned on, the voltmeter measurement gets pushed slightly upward to make space for the cursor measurement. On the right side, also on top, we can have the area which specifies the Voltage Type (H or L) and the indicator "LEDs" which tell, in a visual manner, the amount of voltage measured. One LED turns on every 2.4V. The last LED is red, to signal maximum voltage, while the previous 3 LEDs are orange, to signal we are close to the maximum voltage.</p>
 <p>On the right side we have the touch buttons, while in the middle, we have the Waveform Viewer area. When the Waveform Viewer is turned off, most of the space is taken by the measurements for the maximum and minimum value for the recorded points.</p>
 <p>When the Waveform Viewer is turned on, two horizontal lines appear on the screen to mark the limits of the Waveform Viewer, on top and bottom. The measurements for the minimum and maximum value get moved to their respective line and the text gets scaled down. They are now used as the upper and lower range for the Waveform Viewer, which has auto-scaling.</p>
