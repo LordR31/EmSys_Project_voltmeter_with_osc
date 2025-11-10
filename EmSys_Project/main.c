@@ -39,6 +39,15 @@ int main(void){
 			voltage_button_pressed = false;                                                              // and clear the flag
 		}
 		if(is_system_on){		                                                                         // if the system is on
+			if(!is_calibrated){
+				draw_calibration_ui();
+				
+				if (touch_pending) {                                                                         // if a touch is sensed
+					touch_pending = false;                                                                   // clear the flag
+					touchscreen_process_commad();                                                            // and process the command
+				}
+				
+			}else{
 			draw_ui();                                                                                   // draw the UI
 			draw_voltmeter(is_cursor_on);                                                                // display the voltmeter text
 			draw_voltage_type(is_high_voltage);                                                          // display the voltage type
@@ -90,7 +99,7 @@ int main(void){
 				print_cursor_voltage(cursor_voltage);
 			}
 			draw_indicator_leds(voltage_value, is_high_voltage);                                         // draw the voltage level indicator "LEDs"
-		}else{                                                                                           // IF the system is off
+		}}else{                                                                                           // IF the system is off
 			draw_power_on_screen();                                                                      // draw the power on screen
 		}
 	}

@@ -1,6 +1,8 @@
 #include "adc.h"
 
 bool is_adc_on = false;
+float max_voltage_value = 1;
+float calibrated_adc_step = 0;
 
 void ADC_Init(void){
 	ADMUX = 1 << REFS0;                                                 // select avcc & adc0
@@ -19,10 +21,29 @@ void set_ADC_state(bool is_system_on){
 	}
 }
 
+void ADC_get_max_value(){
+	uint32_t adc_sum = 0;
+	for (uint8_t i = 0; i < NUM_SAMPLES; i++) {
+		ADCSRA |= (1 << ADSC);                                    // start ADC
+		while (ADCSRA & (1 << ADSC));                             // wait for conversion
+		adc_sum += (ADCL | (ADCH << 8));                          // add result
+		timer_delay_ms(1);                                        // small delay between samples
+	}
+	float average_value = adc_sum / (float)NUM_SAMPLES;           // get the average
+
+	// This average_value is the ADC reading for a known 4.810V input
+	// So we compute how much voltage each ADC unit represents
+	calibrated_adc_step = 4.810 / average_value;
+
+	// Optional: store the actual ADC value for diagnostics
+	max_voltage_value = average_value * calibrated_adc_step;      // should be exactly 4.810
+}
+
+
+
 float ADC_measure(bool is_high_voltage){
 	uint32_t adc_sum = 0;
 	for (uint8_t i = 0; i < NUM_SAMPLES; i++) {
-		timer_delay_ms(1);
 		ADCSRA |= (1 << ADSC);                                    // start ADC
 		while (ADCSRA & (1 << ADSC));                             // wait for conversion
 		adc_sum += (ADCL | (ADCH << 8));                          // add result
@@ -32,15 +53,17 @@ float ADC_measure(bool is_high_voltage){
 	if(average_value == 0)
 		return 0;
 	
-	if(!is_high_voltage){                                                                           // calibration for low voltage mode
-		float calibration_offset = 0;                                                               // temp offset for current reading
-		float temp_voltage = ADC_GAIN_LOW * (average_value * ADC_STEP_LOW) + ADC_OFFSET_LOW;        // get the current reading in volts 
-		if((temp_voltage < 1) & (temp_voltage > 0.5))
-			calibration_offset = 0.004;
-		else if((temp_voltage < 2) & (temp_voltage > 1.5))
-			calibration_offset = 0.004;
-		return ADC_GAIN_LOW * (average_value * ADC_STEP_LOW) + ADC_OFFSET_LOW + calibration_offset; // calculate the true voltage with the calibration offset added
+                                                                                    // calibration for low voltage mode
+	float calibration_offset = 0;                                                   // temp offset for current reading
+	float temp_voltage = ADC_GAIN * (average_value * ADC_STEP) + ADC_OFFSET;        // get the current reading in volts 
+	if((temp_voltage < 1) & (temp_voltage > 0.5))
+		calibration_offset = 0.004;
+	else if((temp_voltage < 2) & (temp_voltage > 1.5))
+		calibration_offset = 0.004;
 	
-	}
-	return ADC_GAIN_HIGH * (average_value * ADC_STEP_HIGH) + ADC_OFFSET_HIGH; // return for voltage if we are in high voltage mode
+	float low_voltage = ADC_GAIN * (average_value * calibrated_adc_step) + ADC_OFFSET + calibration_offset; // calculate the true voltage with the calibration offset added
+	
+	if(!is_high_voltage)
+		return low_voltage;                                                                      // return the calculated and calibrated low voltage
+	return (low_voltage * MAX_HIGH_VOLTAGE) / MAX_LOW_VOLTAGE;                                   // calculate and return the equivalent high voltage
 }

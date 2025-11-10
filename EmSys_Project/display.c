@@ -152,22 +152,22 @@ void display_set_rotation(uint8_t mode) {                                       
 	uint8_t madctl = 0;                                                                                                                 // variable to hold the madctl config bits
 
 	switch (display_rotation) {
-		case 0:
+		case PORTRAIT:
 			madctl = MADCTL_MX | MADCTL_BGR;                                                                                            // mirror x axis, use bgr color order
 			display_width = 240;                                                                                                        // set width and height accordingly
 			display_height = 320;
 			break;
-		case 1:
+		case LANDSCAPE:
 			madctl = MADCTL_MV | MADCTL_BGR;                                                                                            // swap x and y axis, use bgr color order
 			display_width = 320;
 			display_height = 240;
 			break;
-		case 2:
+		case PORTRAIT_INVERTED:
 			madctl = MADCTL_MY | MADCTL_BGR;                                                                                            // mirror y axis, use bgr color order
 			display_width = 240;
 			display_height = 320;
 			break;
-		case 3:
+		case LANDSCAPE_INVERTED:
 			madctl = MADCTL_MX | MADCTL_MY | MADCTL_MV | MADCTL_BGR;                                                                    // mirror both axes and swap x/y
 			display_width = 320;
 			display_height = 240;
@@ -529,6 +529,24 @@ void draw_ui(){
 	display_print("Hold", 290, 112);
 	display_print("Wave", 290, 152);
 	display_print("Toggle", 283, 192);
+}
+
+void draw_calibration_ui(){
+	display_draw_line(75, 155, 245, 155, COLOR_WHITE);
+	display_draw_line(75, 155, 75, 185, COLOR_WHITE);
+	display_draw_line(245, 155, 245, 185, COLOR_WHITE);
+	display_draw_line(75, 185, 245, 185, COLOR_WHITE);
+	
+	display_set_color(COLOR_GREEN);
+	set_text_size(2);
+	
+	display_print("Please calibrate device!", 20, 20);
+	display_print("Turn the wheel to max V", 20, 60);
+	display_print("(to the right) and press", 20, 80);
+	display_print("the button!", 20, 100);
+	
+	set_text_size(3);
+	display_print("Calibrate", 80, 160);
 }
 
 void draw_voltmeter(bool is_cursor_on){

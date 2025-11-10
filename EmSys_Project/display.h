@@ -19,7 +19,7 @@
 #define ILI9341_CASET     0x2A
 #define ILI9341_PASET     0x2B
 #define ILI9341_RAMWR     0x2C
-#define ILI9341_MADCTL    0x36
+
 #define ILI9341_PIXFMT    0x3A
 #define ILI9341_FRMCTR1   0xB1
 #define ILI9341_DFUNCTR   0xB6
@@ -33,10 +33,12 @@
 #define ILI9341_VSCRDEF   0x33
 #define ILI9341_VSCRSADD  0x37
 
-#define MADCTL_MY  0x80
-#define MADCTL_MX  0x40
-#define MADCTL_MV  0x20
-#define MADCTL_BGR 0x08
+#define ILI9341_MADCTL    0x36
+
+#define MADCTL_MY         0x80
+#define MADCTL_MX         0x40
+#define MADCTL_MV         0x20
+#define MADCTL_BGR        0x08
 
 #define COLOR_BLACK   0x0000
 #define COLOR_WHITE   0xFFFF
@@ -45,6 +47,9 @@
 #define COLOR_BLUE    0x001F
 #define COLOR_ORANGE  0xFD20 
 
+#define PORTRAIT           0
+#define LANDSCAPE          1
+#define PORTRAIT_INVERTED  2
 #define LANDSCAPE_INVERTED 3
 
 extern bool is_digital_line;
@@ -89,6 +94,7 @@ void draw_indicator_leds(float voltage, bool is_high_voltage);
 void erase_voltage_zone();
 void draw_power_on_screen();
 void draw_ui();
+void draw_calibration_ui();
 void draw_voltmeter(bool is_cursor_on);
 void draw_voltage_type(bool is_high_voltage);
 void draw_cursor_warning();

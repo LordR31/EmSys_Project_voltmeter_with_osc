@@ -13,6 +13,7 @@ extern float min_value;
 extern float max_value;
 extern float plot_points[];
 
+extern bool is_calibrated;
 
 
 void Touch_IRQ_Init(void){
@@ -45,16 +46,21 @@ uint16_t read_touch_y(void) {                            // function to get the 
 }
 
 uint8_t check_touch_buttons(uint16_t x, uint16_t y){     // function to if the touch was accidental or on purpose (it was a button press) 
-	if((x >= BUTTON_X_START) & (x <= BUTTON_X_END))          // if we are within the limits of the button menu for X
-		if((y >= CURSOR_Y_TOP) & (y < HOLD_Y_TOP))           // then, if we are within the vertical limits of the Cursor Button
-			return CURSOR_BUTTON;                        // return that it was a Cursor Button press
-		else if((y >= HOLD_Y_TOP) & (y < WAVE_Y_TOP))        // otherwise, if we are within the vertical limits of the Hold Button
-			return HOLD_BUTTON;                          // return that it was a Hold Button press
-		else if((y >= WAVE_Y_TOP) & (y < TOGGLE_Y_TOP))      // otherwise, if we are within the vertical limits of the Waveform Viewer Button
-			return WAVE_BUTTON;                          // return that it was a Waveform Viewer Button press
-		else if((y >= TOGGLE_Y_TOP) & (y < TOGGLE_Y_BOTTOM)) // otherwise, if we are within the vertical limits of the Toggle Waveform Type Button
-			return TOGGLE_BUTTON;                        // return that it was a Toggle Waveform Type Button press
-	
+	if(is_calibrated){
+		if((x >= BUTTON_X_START) & (x <= BUTTON_X_END))          // if we are within the limits of the button menu for X
+			if((y >= CURSOR_Y_TOP) & (y < HOLD_Y_TOP))           // then, if we are within the vertical limits of the Cursor Button
+				return CURSOR_BUTTON;                        // return that it was a Cursor Button press
+			else if((y >= HOLD_Y_TOP) & (y < WAVE_Y_TOP))        // otherwise, if we are within the vertical limits of the Hold Button
+				return HOLD_BUTTON;                          // return that it was a Hold Button press
+			else if((y >= WAVE_Y_TOP) & (y < TOGGLE_Y_TOP))      // otherwise, if we are within the vertical limits of the Waveform Viewer Button
+				return WAVE_BUTTON;                          // return that it was a Waveform Viewer Button press
+			else if((y >= TOGGLE_Y_TOP) & (y < TOGGLE_Y_BOTTOM)) // otherwise, if we are within the vertical limits of the Toggle Waveform Type Button
+				return TOGGLE_BUTTON;                        // return that it was a Toggle Waveform Type Button press
+	}else{
+		if((x >= CALIBRATION_BUTTON_X_START) && (x <= CALIBRATION_BUTTON_X_END) && (y >= CALIBRATOIN_BUTTON_Y_START) && (y <= CALBIRATION_BUTTON_Y_END)){
+			return CALIBRATION;
+		}
+	}
 	return 0;                                            // if we aren't within the menu limits, return 0 (no button press / accidental press)
 }
 
@@ -112,6 +118,11 @@ void execute_button_command(int which_button){
 					}
 				}
 			}
+			break;
+		case 5:
+			is_calibrated = true;
+			ADC_get_max_value();
+			display_fill_color(COLOR_BLACK);  
 			break;
 	}
 }

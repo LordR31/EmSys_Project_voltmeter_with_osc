@@ -20,6 +20,12 @@
 #define HOLD_BUTTON 2
 #define WAVE_BUTTON 3
 #define TOGGLE_BUTTON 4
+#define CALIBRATION 5
+
+#define CALIBRATION_BUTTON_X_START 1250
+#define CALIBRATOIN_BUTTON_Y_START 2720
+#define CALIBRATION_BUTTON_X_END 3200
+#define CALBIRATION_BUTTON_Y_END 3200
 
 void Touch_IRQ_Init(void);
 uint16_t touch_spi_transfer(uint8_t command);

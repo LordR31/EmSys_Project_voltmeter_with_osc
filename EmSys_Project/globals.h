@@ -32,6 +32,8 @@ float min_value = 5;
 float plot_points[25] = {0};
 int index = 0;
 
+bool is_calibrated = false;
+
 #define START_BUTTON_PIN         4 // PE4
 #define VOLTAGE_TYPE_TOGGLE_PIN  3 // PD3
 #define CURSOR_LEFT_PIN          0 // PD0
@@ -44,7 +46,5 @@ int index = 0;
 #define EXT_INT3                 3
 #define EXT_INT1                 1
 #define EXT_INT0                 0
-
-
 
 #endif /* GLOBALS_H_ */
